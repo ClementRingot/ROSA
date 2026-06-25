@@ -1,0 +1,12 @@
+---
+applications:
+  - name: sap-released-objects-server
+    memory: 256M
+    disk_quota: 512M
+    instances: 1
+    buildpacks:
+      - nodejs_buildpack
+    command: npm run build && TRANSPORT=http npm start
+    env:
+      NODE_ENV: production
+      NPM_CONFIG_PRODUCTION: "false"

@@ -80,6 +80,21 @@ Then add to your MCP client config:
 }
 ```
 
+### Option 4 — Docker
+
+Build and run the server as a container with the HTTP transport enabled:
+
+```bash
+docker build -t sap-released-objects-server .
+docker run --rm -p 3001:3001 sap-released-objects-server
+```
+
+The container exposes:
+
+- MCP endpoint: `http://localhost:3001/mcp`
+- REST API: `http://localhost:3001/api`
+- Health check: `http://localhost:3001/health`
+
 ## Features
 
 - **Search SAP objects** — classes, CDS views, tables, data elements, BDEFs, etc.
@@ -261,3 +276,13 @@ git push origin main --tags
 ```
 
 GitHub Actions will then build on 3 runners (Ubuntu, Windows, macOS)
+
+## Deploying To SAP BTP Cloud Foundry
+
+This repository includes a `manifest.yml` for Cloud Foundry deployments on SAP BTP.
+
+```bash
+cf push
+```
+
+The manifest uses the Node.js buildpack, installs dependencies, builds the TypeScript project during staging, and starts the app in HTTP mode so BTP can route traffic to `/mcp`, `/api`, and `/health`.
