@@ -116,7 +116,34 @@ docker run --rm -p 3001:3001 \
 
 MCP clients with OAuth 2.1 support (Claude Desktop, Claude Code) handle the authorization flow automatically.
 
-### Option 6 — SAP BTP Cloud Foundry
+### Option 6 — Railway with OAuth 2.1 (private deployment)
+
+Same as Railway public, but with OIDC authentication. Set these in the Railway dashboard (Settings > Variables):
+
+| Variable | Value |
+| --- | --- |
+| `TRANSPORT` | `http` |
+| `OAUTH_ISSUER` | `https://login.company.com/realms/prod` |
+| `OAUTH_AUDIENCE` | `sap-released-objects` |
+
+Compatible with any OIDC provider (Keycloak, Entra ID, Auth0, Okta, Google). MCP clients with OAuth 2.1 support handle the authorization flow automatically.
+
+### Option 7 — Other Node.js Hosts (Render, Heroku, Fly.io...)
+
+Any Node.js hosting platform that can run `npm run build` + `npm start` works out of the box:
+
+| Platform | Setup |
+| --- | --- |
+| **Render** | Connect repo → set `TRANSPORT=http` in env vars → auto-detects Node.js |
+| **Heroku** | `heroku create` → `heroku config:set TRANSPORT=http` → `git push heroku main` |
+| **Fly.io** | `fly launch` → set `TRANSPORT=http` in `fly.toml` → `fly deploy` |
+| **Any buildpack host** | Set `TRANSPORT=http` and `NODE_ENV=production` → build & start commands from `package.json` |
+
+The server reads `PORT` from the environment (most platforms inject it automatically). Add `OAUTH_ISSUER` + `OAUTH_AUDIENCE` to enable OAuth 2.1 on any of these platforms.
+
+See [Node.js Deployment Guide](./docs/nodejs-deployment.md) for platform-specific setup instructions, health checks, resource usage, and OAuth configuration.
+
+### Option 8 — SAP BTP Cloud Foundry
 
 Deploy to Cloud Foundry with XSUAA authentication using the MTA descriptor.
 
@@ -157,8 +184,8 @@ Authentication is **config-driven** and auto-detected. The same codebase support
 
 | Mode | Trigger | Use case |
 | --- | --- | --- |
-| **Public** | No auth env vars set | Railway, local dev, Docker public |
-| **OIDC / OAuth 2.1** | `OAUTH_ISSUER` + `OAUTH_AUDIENCE` set | Docker private (Keycloak, Entra ID, Auth0...) |
+| **Public** | No auth env vars set | Railway, local dev, Docker public, any host |
+| **OIDC / OAuth 2.1** | `OAUTH_ISSUER` + `OAUTH_AUDIENCE` set | Railway, Docker, Render, Heroku, Fly.io... (Keycloak, Entra ID, Auth0) |
 | **XSUAA** | `VCAP_SERVICES` contains xsuaa binding | SAP BTP Cloud Foundry |
 | **API keys** | `API_KEYS` set (alongside any mode) | Simple key-based access |
 
@@ -365,7 +392,7 @@ GitHub Actions will then build on 3 runners (Ubuntu, Windows, macOS)
 
 ## Deploying To SAP BTP Cloud Foundry
 
-See [Option 6 — SAP BTP Cloud Foundry](#option-6--sap-btp-cloud-foundry) in Quick Start for deployment instructions.
+See [Option 8 — SAP BTP Cloud Foundry](#option-8--sap-btp-cloud-foundry) in Quick Start for deployment instructions.
 
 The project uses an MTA descriptor (`mta.yaml`) that:
 - Creates and binds an XSUAA service instance from `xs-security.json`
