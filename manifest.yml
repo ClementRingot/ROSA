@@ -1,0 +1,14 @@
+---
+applications:
+  - name: sap-released-objects-server
+    memory: 256M
+    disk_quota: 512M
+    instances: 1
+    buildpacks:
+      - nodejs_buildpack
+    command: node dist/index.js
+    health-check-type: http
+    health-check-http-endpoint: /health
+    env:
+      NODE_ENV: production
+      TRANSPORT: http

@@ -1,0 +1,29 @@
+_schema-version: "3.1"
+ID: sap-released-objects-server
+version: 1.12.5
+
+modules:
+  - name: sap-released-objects-mcp
+    type: nodejs
+    path: .
+    parameters:
+      memory: 256M
+      disk-quota: 512M
+      health-check-type: http
+      health-check-http-endpoint: /health
+    properties:
+      NODE_ENV: production
+      TRANSPORT: http
+    build-parameters:
+      builder: npm
+      build-result: dist
+    requires:
+      - name: sap-released-objects-xsuaa
+
+resources:
+  - name: sap-released-objects-xsuaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json

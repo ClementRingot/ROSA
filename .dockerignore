@@ -1,0 +1,15 @@
+node_modules/
+dist/
+bundle/
+bin/
+*.exe
+.git/
+.github/
+.claude/
+.cfignore
+.dockerignore
+.gitignore
+LICENSE
+README.md
+manifest.yml
+skills/

@@ -38,12 +38,18 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
-    "express": "^4.21.0",
+    "@arc-mcp/xsuaa-auth": "^0.1.4",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "jose": "^6.2.3",
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.0.0",
     "@yao-pkg/pkg": "^6.14.1",
     "esbuild": "^0.27.3",
