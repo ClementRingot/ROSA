@@ -1,0 +1,32 @@
+_schema-version: "3.1"
+ID: sap-released-objects-server-overrides
+extends: sap-released-objects-server
+
+# Copy this file, rename (e.g., mta-overrides-dev.mtaext), and fill in values.
+# Deploy with: cf deploy mta_archives/*.mtar -e mta-overrides-dev.mtaext
+
+modules:
+  - name: sap-released-objects-mcp
+    parameters:
+      # Override route host (default: sap-released-objects-mcp)
+      # host: sap-released-objects-dev
+    properties:
+      # Stable signing secret for OAuth DCR + state codec (generate with: openssl rand -base64 48)
+      # DCR_SIGNING_SECRET: "<base64-secret>"
+
+      # OAuth DCR client registration lifetime in seconds (0 = never expire)
+      # OAUTH_DCR_TTL_SECONDS: "0"
+
+      # Rate limits (requests per minute)
+      # MCP_RATE_LIMIT: "600"
+      # API_RATE_LIMIT: "600"
+
+      # CORS allowed origins (comma-separated)
+      # CORS_ALLOWED_ORIGINS: "https://claude.ai"
+
+resources:
+  - name: sap-released-objects-xsuaa
+    parameters:
+      # Override xsappname if it conflicts with another app in the same subaccount
+      # config:
+      #   xsappname: sap-released-objects-dev

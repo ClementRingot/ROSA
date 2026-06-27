@@ -386,10 +386,10 @@ describe("scoreObject", () => {
       // nameTokens: ["handling", "unit", "manager"]
       // "handling" and "unit" are separate name tokens → no single token contains both
       // But they get full token matches (10 each) = 20
-      const s = score("handling unit", idx);
-      // full matches: 20, nameContains: "CL_HANDLING_UNIT_MANAGER".includes("handling unit")? NO
+      // nameContains: normalized "CL_HANDLING_UNIT_MANAGER".includes("HANDLING_UNIT") → YES (+8)
       // compound: no single token has both → 0
-      expect(s).toBe(20);
+      const s = score("handling unit", idx);
+      expect(s).toBe(28);
     });
   });
 

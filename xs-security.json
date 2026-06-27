@@ -1,0 +1,16 @@
+{
+  "xsappname": "sap-released-objects",
+  "tenant-mode": "dedicated",
+  "description": "Authentication only — no scopes or role-templates. XSUAA proves identity; the server serves public read-only data and does not require authorization gating.",
+  "oauth2-configuration": {
+    "redirect-uris": [
+      "http://localhost:*/**",
+      "https://*.hana.ondemand.com/**",
+      "https://*.applicationstudio.cloud.sap/**",
+      "https://claude.ai/api/mcp/auth_callback",
+      "cursor://anysphere.cursor-retrieval/**",
+      "cursor://anysphere.cursor-mcp/**",
+      "vscode://vscode.microsoft-authentication/**"
+    ]
+  }
+}

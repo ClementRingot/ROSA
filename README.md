@@ -80,6 +80,107 @@ Then add to your MCP client config:
 }
 ```
 
+### Option 4 — Docker
+
+Build and run the server as a container with the HTTP transport enabled:
+
+```bash
+docker build -t sap-released-objects-server .
+docker run --rm -p 3001:3001 sap-released-objects-server
+```
+
+To use a custom port:
+
+```bash
+docker run --rm -e PORT=8080 -p 8080:8080 sap-released-objects-server
+```
+
+The container exposes:
+
+- MCP endpoint: `http://localhost:3001/mcp`
+- REST API: `http://localhost:3001/api`
+- Health check: `http://localhost:3001/health`
+
+> The image runs as non-root user (`node`) and includes a `HEALTHCHECK` instruction for container orchestrators.
+
+### Option 5 — Docker with OAuth 2.1 (private deployment)
+
+For enterprise deployments requiring authentication, set OIDC environment variables:
+
+```bash
+docker run --rm -p 3001:3001 \
+  -e OAUTH_ISSUER=https://login.company.com/oauth \
+  -e OAUTH_AUDIENCE=https://mcp.internal.company.com \
+  sap-released-objects-server
+```
+
+MCP clients with OAuth 2.1 support (Claude Desktop, Claude Code) handle the authorization flow automatically.
+
+### Option 6 — SAP BTP Cloud Foundry
+
+Deploy to Cloud Foundry with XSUAA authentication using the MTA descriptor.
+
+**Prerequisites:** Install the [CF CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html), the [MBT build tool](https://sap.github.io/cloud-mta-build-tool/), and log in:
+
+```bash
+cf login -a https://api.cf.<region>.hana.ondemand.com
+```
+
+**Build and deploy:**
+
+```bash
+mbt build
+cf deploy mta_archives/sap-released-objects-server_1.12.5.mtar
+```
+
+For per-landscape overrides (custom host, DCR secret, etc.), copy `mta-overrides.mtaext.example`:
+
+```bash
+cp mta-overrides.mtaext.example mta-overrides-dev.mtaext
+# Edit the file, then:
+cf deploy mta_archives/*.mtar -e mta-overrides-dev.mtaext
+```
+
+**Post-deploy (recommended):**
+
+```bash
+# Stable signing secret for OAuth dynamic client registration
+cf set-env sap-released-objects-mcp DCR_SIGNING_SECRET "$(openssl rand -base64 48)"
+cf restage sap-released-objects-mcp
+```
+
+The MTA creates an XSUAA service instance and binds it to the app. Authentication is auto-detected from `VCAP_SERVICES` — no manual configuration needed.
+
+## Authentication
+
+Authentication is **config-driven** and auto-detected. The same codebase supports all modes:
+
+| Mode | Trigger | Use case |
+| --- | --- | --- |
+| **Public** | No auth env vars set | Railway, local dev, Docker public |
+| **OIDC / OAuth 2.1** | `OAUTH_ISSUER` + `OAUTH_AUDIENCE` set | Docker private (Keycloak, Entra ID, Auth0...) |
+| **XSUAA** | `VCAP_SERVICES` contains xsuaa binding | SAP BTP Cloud Foundry |
+| **API keys** | `API_KEYS` set (alongside any mode) | Simple key-based access |
+
+When authentication is enabled:
+- `/health` remains public (load balancers, orchestrators)
+- `/mcp` and `/api` require a valid `Authorization: Bearer <token>` header
+- XSUAA mode: OAuth proxy routes (`/authorize`, `/oauth/callback`, `/.well-known/*`) are mounted automatically
+- MCP clients with OAuth 2.1 support handle the authorization flow automatically
+
+### Environment variables
+
+| Variable | Mode | Description |
+| --- | --- | --- |
+| `OAUTH_ISSUER` | OIDC | Authorization Server issuer URL |
+| `OAUTH_AUDIENCE` | OIDC | Resource identifier for token validation |
+| `API_KEYS` | Any | API keys in `key:profile` format (comma-separated) |
+| `DCR_SIGNING_SECRET` | XSUAA | Stable secret for OAuth DCR + state codec |
+| `OAUTH_DCR_TTL_SECONDS` | XSUAA | DCR client lifetime (0 = never expire) |
+| `CORS_ALLOWED_ORIGINS` | Any | Comma-separated allowed origins |
+| `MCP_RATE_LIMIT` | Any | `/mcp` requests per minute (default: 600) |
+| `API_RATE_LIMIT` | Any | `/api` requests per minute (default: 600) |
+
 ## Features
 
 - **Search SAP objects** — classes, CDS views, tables, data elements, BDEFs, etc.
@@ -261,3 +362,16 @@ git push origin main --tags
 ```
 
 GitHub Actions will then build on 3 runners (Ubuntu, Windows, macOS)
+
+## Deploying To SAP BTP Cloud Foundry
+
+See [Option 6 — SAP BTP Cloud Foundry](#option-6--sap-btp-cloud-foundry) in Quick Start for deployment instructions.
+
+The project uses an MTA descriptor (`mta.yaml`) that:
+- Creates and binds an XSUAA service instance from `xs-security.json`
+- Configures HTTP health check on `/health`
+- Sets `TRANSPORT=http` and `NODE_ENV=production`
+- Allocates 256 MB memory / 512 MB disk
+- Uses the Node.js buildpack with npm build
+
+Authentication is auto-detected from the XSUAA service binding in `VCAP_SERVICES`. A `manifest.yml` is also provided for simple `cf push` deployments without XSUAA.

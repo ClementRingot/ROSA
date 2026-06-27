@@ -1,0 +1,11 @@
+node_modules/
+dist/
+bundle/
+bin/
+*.exe
+.git/
+.github/
+.claude/
+.dockerignore
+Dockerfile
+skills/
