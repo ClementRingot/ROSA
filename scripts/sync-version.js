@@ -51,8 +51,9 @@ function patch(relPath, pattern, replacement) {
   }
 }
 
-// mta.yaml — top-level `version:` field
-patch("mta.yaml", /^version:.*$/m, `version: ${version}`);
+// mta.yaml — top-level `version:` field (preserve any trailing comment, e.g.
+// the release-please `# x-release-please-version` annotation)
+patch("mta.yaml", /^(version:\s*)\d+\.\d+\.\d+/m, `$1${version}`);
 
 // README.md — every `_X.Y.Z.mtar` reference (e.g. mta_archives/rosa_1.2.3.mtar)
 patch("README.md", /_\d+\.\d+\.\d+\.mtar/g, `_${version}.mtar`);

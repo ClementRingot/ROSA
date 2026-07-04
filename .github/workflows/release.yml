@@ -1,76 +1,183 @@
-name: Build & Release
+name: Release
+
+# Unified, multi-artifact release: one tag -> npm (npmjs + GitHub Packages),
+# a multi-arch Docker image on GHCR, and native executables on the GitHub
+# Release. Triggered by version tags (v1.2.3), normally created by the
+# release-train (release-please) workflow.
 
 on:
   push:
     tags:
-      - "v*" # Triggered on version tags: v1.0.0, v1.1.0, etc.
+      - "v*"
 
 permissions:
-  contents: write # Required to create releases and upload assets
+  contents: read
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Gate: build + test + anti-drift. Nothing publishes unless this passes.
+  # ---------------------------------------------------------------------------
   build:
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: node20-linux-x64
-            artifact: sap-released-objects-linux
-          - os: windows-latest
-            target: node20-win-x64
-            artifact: sap-released-objects-win.exe
-          - os: macos-latest
-            target: node20-macos-x64
-            artifact: sap-released-objects-macos
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build TypeScript
+      - name: Verify package.json version matches the tag
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          echo "tag=$TAG package.json=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::package.json version ($PKG) does not match tag ($TAG)"
+            exit 1
+          fi
+
+      - name: Build
         run: npm run build
 
-      - name: Bundle with esbuild
-        run: npm run bundle
+      - name: Test
+        run: npm test --if-present
 
-      - name: Package executable
-        run: npx pkg bundle/index.cjs --targets ${{ matrix.target }} --output ${{ matrix.artifact }}
-
-      - name: Upload artifact
+      - name: Upload dist artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.artifact }}
+          name: dist
+          path: dist/
 
-  release:
+  # ---------------------------------------------------------------------------
+  # Publish to npmjs (Trusted Publishing / OIDC) and GitHub Packages (mirror).
+  # ---------------------------------------------------------------------------
+  npm-publish:
     needs: build
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      id-token: write # Trusted Publishing + provenance on npmjs
+      packages: write # GitHub Packages mirror
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts/
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: List artifacts
-        run: find artifacts/ -type f | head -20
+      - name: Setup Node.js (npmjs registry)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Trusted Publishing requires npm >= 11.5; setup-node 22 ships npm 10.
+      - name: Upgrade npm (for Trusted Publishing)
+        run: npm install -g npm@latest
+
+      - name: Publish to npmjs (Trusted Publishing, provenance auto-attached)
+        run: npm publish --access public
+
+      - name: Setup Node.js (GitHub Packages registry)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+
+      - name: Publish to GitHub Packages (mirror)
+        run: npm publish --access public --registry https://npm.pkg.github.com
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # Multi-arch Docker image -> GHCR.
+  # ---------------------------------------------------------------------------
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata (tags & labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/clementringot/rosa
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - name: Build and push (linux/amd64, linux/arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---------------------------------------------------------------------------
+  # Native executables + checksums -> GitHub Release.
+  # ---------------------------------------------------------------------------
+  binaries:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release and upload assets
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # @yao-pkg/pkg cross-compiles all three targets from Linux.
+      - name: Build native executables
+        run: npm run pkg:all
+
+      - name: Generate checksums
+        working-directory: bin
+        run: sha256sum rosa-* > SHA256SUMS.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
-            artifacts/sap-released-objects-linux/sap-released-objects-linux
-            artifacts/sap-released-objects-win.exe/sap-released-objects-win.exe
-            artifacts/sap-released-objects-macos/sap-released-objects-macos
+            bin/rosa-win.exe
+            bin/rosa-linux
+            bin/rosa-macos
+            bin/SHA256SUMS.txt
