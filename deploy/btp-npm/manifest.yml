@@ -1,0 +1,28 @@
+---
+# npm-based Cloud Foundry deployment.
+#
+# Push this folder (not the repo). The Node.js buildpack runs `npm install`
+# at staging, pulling @clementringot/rosa from npm, then starts it in HTTP
+# mode. To ship a new version, bump the pinned dependency in package.json and
+# `cf push` again — no source checkout, no mbt build.
+applications:
+  - name: rosa
+    memory: 256M
+    disk_quota: 512M
+    instances: 1
+    buildpacks:
+      - nodejs_buildpack
+    command: npm start
+    health-check-type: http
+    health-check-http-endpoint: /health
+    env:
+      NODE_ENV: production
+      TRANSPORT: http
+      # OIDC auth (optional): point at the platform UAA or an external IdP.
+      # OAUTH_ISSUER: https://login.company.com/oauth
+      # OAUTH_AUDIENCE: https://rosa.internal.company.com
+    # XSUAA auth (SAP BTP): pre-create the service from the repo's
+    # xs-security.json, then uncomment the binding below:
+    #   cf create-service xsuaa application rosa-xsuaa -c xs-security.json
+    # services:
+    #   - rosa-xsuaa
