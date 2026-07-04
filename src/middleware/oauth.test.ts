@@ -98,9 +98,9 @@ describe("configureAuth", () => {
   it("returns xsuaa mode when VCAP_SERVICES has xsuaa binding", () => {
     const creds = {
       url: "https://tenant.authentication.eu10.hana.ondemand.com",
-      clientid: "sb-sap-released-objects",
+      clientid: "sb-rosa",
       clientsecret: "secret",
-      xsappname: "sap-released-objects",
+      xsappname: "rosa",
       uaadomain: "authentication.eu10.hana.ondemand.com",
     };
     mockLoadXsuaaCredentials.mockReturnValue(creds);
@@ -115,8 +115,8 @@ describe("configureAuth", () => {
     const options = mockSetupHttpAuth.mock.calls[0][1];
     expect(options.xsuaa).toBeDefined();
     expect(options.xsuaa.credentials).toEqual(creds);
-    expect(options.xsuaa.clientIdPrefix).toBe("sap-released-objects-");
-    expect(options.xsuaa.resourceName).toBe("SAP Released Objects MCP");
+    expect(options.xsuaa.clientIdPrefix).toBe("rosa-");
+    expect(options.xsuaa.resourceName).toBe("ROSA — Released Objects Search Assistant");
     expect(options.oidc).toBeUndefined();
   });
 

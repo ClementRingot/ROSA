@@ -1,24 +1,39 @@
 {
-  "name": "sap-released-objects-server",
-  "version": "1.12.5",
-  "description": "MCP server and REST API for SAP Cloudification Repository - Search released objects, classic APIs, successors with Clean Core Level filtering (A/B/C/D)",
+  "name": "@clementringot/rosa",
+  "version": "1.12.6",
+  "description": "ROSA — Released Objects Search Assistant. MCP server and REST API for the SAP Cloudification Repository: search released objects, classic APIs, and successors with Clean Core Level filtering (A/B/C/D).",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "sap-released-objects-server": "dist/index.js"
+    "rosa": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "sap_abbreviation_dictionary.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "start:http": "TRANSPORT=http node dist/index.js",
+    "start:http": "node dist/index.js --http",
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "tsc --watch",
+    "sync-version": "node scripts/sync-version.js",
+    "prepack": "npm run build",
     "bundle": "npm run build && esbuild dist/index.js --bundle --platform=node --target=node20 --format=cjs --outfile=bundle/index.cjs && node -e \"require('fs').copyFileSync('sap_abbreviation_dictionary.json','bundle/sap_abbreviation_dictionary.json')\"",
-    "pkg:win": "npm run bundle && pkg bundle/index.cjs --targets node20-win-x64 --output bin/sap-released-objects-win.exe",
-    "pkg:linux": "npm run bundle && pkg bundle/index.cjs --targets node20-linux-x64 --output bin/sap-released-objects-linux",
-    "pkg:macos": "npm run bundle && pkg bundle/index.cjs --targets node20-macos-x64 --output bin/sap-released-objects-macos",
-    "pkg:all": "npm run bundle && pkg bundle/index.cjs --targets node20-win-x64,node20-linux-x64,node20-macos-x64 --out-path bin/"
+    "pkg:win": "npm run bundle && pkg bundle/index.cjs --targets node20-win-x64 --output bin/rosa-win.exe",
+    "pkg:linux": "npm run bundle && pkg bundle/index.cjs --targets node20-linux-x64 --output bin/rosa-linux",
+    "pkg:macos": "npm run bundle && pkg bundle/index.cjs --targets node20-macos-x64 --output bin/rosa-macos",
+    "pkg:all": "npm run bundle && pkg bundle/index.cjs --targets node20-win-x64,node20-linux-x64,node20-macos-x64 --out-path bin/",
+    "version": "node scripts/sync-version.js && git add mta.yaml README.md"
   },
   "pkg": {
     "assets": [
@@ -27,16 +42,27 @@
   },
   "keywords": [
     "mcp",
-    "rest-api",
+    "model-context-protocol",
     "sap",
     "abap",
+    "abap-cloud",
     "clean-core",
-    "released-apis",
     "cloudification-repository",
-    "rap"
+    "released-apis",
+    "released-objects",
+    "rap",
+    "rest-api"
   ],
-  "author": "",
+  "author": "Clément Ringot",
   "license": "MIT",
+  "homepage": "https://github.com/ClementRingot/ROSA#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ClementRingot/ROSA.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ClementRingot/ROSA/issues"
+  },
   "dependencies": {
     "@arc-mcp/xsuaa-auth": "^0.1.4",
     "@modelcontextprotocol/sdk": "^1.29.0",
