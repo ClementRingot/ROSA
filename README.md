@@ -1,404 +1,186 @@
-# SAP Released Objects Server
+# ROSA — Released Objects Search Assistant
 
-[![CI](https://github.com/ClementRingot/sap-released-objects-server/actions/workflows/ci.yml/badge.svg)](https://github.com/ClementRingot/sap-released-objects-server/actions/workflows/ci.yml)
-[![Release](https://github.com/ClementRingot/sap-released-objects-server/actions/workflows/release.yml/badge.svg)](https://github.com/ClementRingot/sap-released-objects-server/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/@clementringot/rosa?logo=npm)](https://www.npmjs.com/package/@clementringot/rosa)
+[![npm downloads](https://img.shields.io/npm/dm/@clementringot/rosa)](https://www.npmjs.com/package/@clementringot/rosa)
+[![GitHub release](https://img.shields.io/github/v/release/ClementRingot/ROSA)](https://github.com/ClementRingot/ROSA/releases/latest)
+[![Release workflow](https://img.shields.io/github/actions/workflow/status/ClementRingot/ROSA/release.yml?label=release)](https://github.com/ClementRingot/ROSA/actions/workflows/release.yml)
+[![GHCR image](https://img.shields.io/badge/ghcr.io-rosa-blue?logo=docker&logoColor=white)](https://github.com/ClementRingot/ROSA/pkgs/container/rosa)
+[![Node](https://img.shields.io/node/v/@clementringot/rosa)](https://www.npmjs.com/package/@clementringot/rosa)
+[![License: MIT](https://img.shields.io/github/license/ClementRingot/ROSA)](./LICENSE)
+[![MCP Server](https://img.shields.io/badge/MCP-server-blue)](https://modelcontextprotocol.io/)
 
-A server that gives AI agents real-time knowledge of **which SAP objects are released for ABAP Cloud / Clean Core** — and what to use instead when they're not.
+**ROSA gives AI agents real-time knowledge of which SAP objects are released for
+ABAP Cloud / Clean Core — and what to use instead when they're not.**
 
-It plugs directly into the [SAP Cloudification Repository](https://github.com/SAP/abap-atc-cr-cv-s4hc) (the official source of truth) and exposes the data **two ways**:
+It plugs into the [SAP Cloudification Repository](https://github.com/SAP/abap-atc-cr-cv-s4hc)
+(the official source of truth) and exposes it **two ways**, sharing the same
+business logic — no feature gap between them:
 
 | Access mode | Protocol | Use case |
 | --- | --- | --- |
-| **MCP Server** | [Model Context Protocol](https://modelcontextprotocol.io/) on `POST /mcp` | AI agents with native MCP support (Claude Desktop, Claude Code, Cline, Cursor...) |
-| **REST API** | Simple `GET` endpoints on `/api/*` returning JSON | LLM skills, custom integrations, scripts, CI pipelines — anything that can call an HTTP endpoint |
+| **MCP Server** | [Model Context Protocol](https://modelcontextprotocol.io/) on `POST /mcp` | AI agents with native MCP support (Claude Desktop, Claude Code, Cline, Cursor…) |
+| **REST API** | `GET` endpoints on `/api/*` returning JSON | LLM skills, scripts, CI pipelines — anything that speaks HTTP |
 
-Both modes expose the **exact same capabilities** (search, details, successors, compliance check, statistics) and share the same business logic — no feature gap between MCP and REST.
+> Ask *"Is table MARA available in ABAP Cloud?"* and the agent instantly knows:
+> **no — use `I_PRODUCT` instead.**
 
-## The Problem
+## Choose your deployment
 
-When you use an AI agent to write ABAP Cloud code, the agent has no idea which objects are released, deprecated, or forbidden. It will happily generate code using `MARA`, `CL_GUI_ALV_GRID`, or `BSEG` — all of which are **not released** in ABAP Cloud.
+| I want to… | Use | One-liner |
+| --- | --- | --- |
+| Plug into Claude Desktop / Code / Cursor | **npm** | `npx -y @clementringot/rosa` |
+| Run without Node.js installed | **Native executable** | download from [Releases](https://github.com/ClementRingot/ROSA/releases/latest) |
+| Run as a server / self-host | **Docker** | `docker run -p 3001:3001 ghcr.io/clementringot/rosa` |
+| Deploy on a generic Node host | **Node PaaS** | Railway / Render / Fly.io — set `TRANSPORT=http` |
+| Deploy on SAP BTP Cloud Foundry | **MTA** or **npm wrapper** | see [DEPLOYMENT](./docs/DEPLOYMENT.md#sap-btp-cloud-foundry-two-paths) |
+| Deploy on classic Cloud Foundry | **`cf push`** | see [cloud-foundry-classic](./docs/cloud-foundry-classic.md) |
 
-This server solves this. Ask *"Is MARA available?"* and the agent instantly knows: **no — use `I_PRODUCT` instead.**
+Full details for every option: **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)**.
 
-## Quick Start
+## Quick start (MCP client)
 
-### Option 1 — MCP Client (Claude Desktop, Claude Code, Cline...)
+No install needed — `npx` runs the server in stdio mode, which is what MCP
+clients expect. Add one of these to your client config:
 
-Add this to your MCP client config:
+**Claude Desktop** (`claude_desktop_config.json`) / **Claude Code** (`.mcp.json`):
 
 ```json
 {
   "mcpServers": {
-    "sap-released-objects": {
-      "type": "url",
-      "url": "https://sap-released-objects-server-production.up.railway.app/mcp"
+    "rosa": {
+      "command": "npx",
+      "args": ["-y", "@clementringot/rosa"]
     }
   }
 }
 ```
 
-Nothing to install, nothing to maintain — you're ready to go.
-
-### Option 2 — REST API (Skills, scripts, integrations)
-
-Call the hosted REST API directly. All endpoints are `GET`, return JSON, and support CORS.
-
-```bash
-# Search for purchase order objects
-curl "https://sap-released-objects-server-production.up.railway.app/api/search?query=purchase+order"
-
-# Get details for table MARA
-curl "https://sap-released-objects-server-production.up.railway.app/api/object?object_type=TABL&object_name=MARA"
-
-# Check Clean Core compliance
-curl "https://sap-released-objects-server-production.up.railway.app/api/compliance?object_names=MARA,BSEG,I_PRODUCT"
-```
-
-To use as an **LLM skill**, see [`SKILL.md`](./skills/sap-released-objects/SKILL.md) — it contains the full API reference formatted for LLM consumption (endpoints, parameters, response examples, interpretation instructions).
-
-### Option 3 — Standalone executable (local, no Node.js)
-
-Download the executable for your platform:
-
-| Platform | Download |
-| --- | --- |
-| **Windows** | [`sap-released-objects-win.exe`](https://github.com/ClementRingot/sap-released-objects-server/releases/latest/download/sap-released-objects-win.exe) |
-| **Linux** | [`sap-released-objects-linux`](https://github.com/ClementRingot/sap-released-objects-server/releases/latest/download/sap-released-objects-linux) |
-| **macOS** | [`sap-released-objects-macos`](https://github.com/ClementRingot/sap-released-objects-server/releases/latest/download/sap-released-objects-macos) |
-
-Then add to your MCP client config:
+**Cursor** (`~/.cursor/mcp.json` or `.cursor/mcp.json`):
 
 ```json
 {
   "mcpServers": {
-    "sap-released-objects": {
-      "type": "stdio",
-      "command": "/path/to/sap-released-objects-win.exe"
+    "rosa": {
+      "command": "npx",
+      "args": ["-y", "@clementringot/rosa"]
     }
   }
 }
 ```
 
-### Option 4 — Docker
+Prefer a hosted, zero-install setup? Point your client at a running instance's
+`/mcp` URL instead:
 
-Build and run the server as a container with the HTTP transport enabled:
-
-```bash
-docker build -t sap-released-objects-server .
-docker run --rm -p 3001:3001 sap-released-objects-server
+```json
+{
+  "mcpServers": {
+    "rosa": { "type": "url", "url": "https://<your-instance>/mcp" }
+  }
+}
 ```
 
-To use a custom port:
+### REST API (skills, scripts, CI)
+
+All endpoints are `GET`, return JSON, and support CORS:
 
 ```bash
-docker run --rm -e PORT=8080 -p 8080:8080 sap-released-objects-server
+curl "https://<your-instance>/api/search?query=purchase+order"
+curl "https://<your-instance>/api/object?object_type=TABL&object_name=MARA"
+curl "https://<your-instance>/api/compliance?object_names=MARA,BSEG,I_PRODUCT"
 ```
 
-The container exposes:
-
-- MCP endpoint: `http://localhost:3001/mcp`
-- REST API: `http://localhost:3001/api`
-- Health check: `http://localhost:3001/health`
-
-> The image runs as non-root user (`node`) and includes a `HEALTHCHECK` instruction for container orchestrators.
-
-### Option 5 — Docker with OAuth 2.1 (private deployment)
-
-For enterprise deployments requiring authentication, set OIDC environment variables:
-
-```bash
-docker run --rm -p 3001:3001 \
-  -e OAUTH_ISSUER=https://login.company.com/oauth \
-  -e OAUTH_AUDIENCE=https://mcp.internal.company.com \
-  sap-released-objects-server
-```
-
-MCP clients with OAuth 2.1 support (Claude Desktop, Claude Code) handle the authorization flow automatically.
-
-### Option 6 — Railway with OAuth 2.1 (private deployment)
-
-Same as Railway public, but with OIDC authentication. Set these in the Railway dashboard (Settings > Variables):
-
-| Variable | Value |
-| --- | --- |
-| `TRANSPORT` | `http` |
-| `OAUTH_ISSUER` | `https://login.company.com/realms/prod` |
-| `OAUTH_AUDIENCE` | `sap-released-objects` |
-
-Compatible with any OIDC provider (Keycloak, Entra ID, Auth0, Okta, Google). MCP clients with OAuth 2.1 support handle the authorization flow automatically.
-
-### Option 7 — Other Node.js Hosts (Render, Heroku, Fly.io...)
-
-Any Node.js hosting platform that can run `npm run build` + `npm start` works out of the box:
-
-| Platform | Setup |
-| --- | --- |
-| **Render** | Connect repo → set `TRANSPORT=http` in env vars → auto-detects Node.js |
-| **Heroku** | `heroku create` → `heroku config:set TRANSPORT=http` → `git push heroku main` |
-| **Fly.io** | `fly launch` → set `TRANSPORT=http` in `fly.toml` → `fly deploy` |
-| **Any buildpack host** | Set `TRANSPORT=http` and `NODE_ENV=production` → build & start commands from `package.json` |
-
-The server reads `PORT` from the environment (most platforms inject it automatically). Add `OAUTH_ISSUER` + `OAUTH_AUDIENCE` to enable OAuth 2.1 on any of these platforms.
-
-See [Node.js Deployment Guide](./docs/nodejs-deployment.md) for platform-specific setup instructions, health checks, resource usage, and OAuth configuration.
-
-### Option 8 — SAP BTP Cloud Foundry
-
-Deploy to Cloud Foundry with XSUAA authentication using the MTA descriptor.
-
-**Prerequisites:** Install the [CF CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html), the [MBT build tool](https://sap.github.io/cloud-mta-build-tool/), and log in:
-
-```bash
-cf login -a https://api.cf.<region>.hana.ondemand.com
-```
-
-**Build and deploy:**
-
-```bash
-mbt build
-cf deploy mta_archives/sap-released-objects-server_1.12.6.mtar
-```
-
-For per-landscape overrides (custom host, DCR secret, etc.), copy `mta-overrides.mtaext.example`:
-
-```bash
-cp mta-overrides.mtaext.example mta-overrides-dev.mtaext
-# Edit the file, then:
-cf deploy mta_archives/*.mtar -e mta-overrides-dev.mtaext
-```
-
-**Post-deploy (recommended):**
-
-```bash
-# Stable signing secret for OAuth dynamic client registration
-cf set-env sap-released-objects-mcp DCR_SIGNING_SECRET "$(openssl rand -base64 48)"
-cf restage sap-released-objects-mcp
-```
-
-The MTA creates an XSUAA service instance and binds it to the app. Authentication is auto-detected from `VCAP_SERVICES` — no manual configuration needed.
-
-## Authentication
-
-Authentication is **config-driven** and auto-detected. The same codebase supports all modes:
-
-| Mode | Trigger | Use case |
-| --- | --- | --- |
-| **Public** | No auth env vars set | Railway, local dev, Docker public, any host |
-| **OIDC / OAuth 2.1** | `OAUTH_ISSUER` + `OAUTH_AUDIENCE` set | Railway, Docker, Render, Heroku, Fly.io... (Keycloak, Entra ID, Auth0) |
-| **XSUAA** | `VCAP_SERVICES` contains xsuaa binding | SAP BTP Cloud Foundry |
-| **API keys** | `API_KEYS` set (alongside any mode) | Simple key-based access |
-
-When authentication is enabled:
-- `/health` remains public (load balancers, orchestrators)
-- `/mcp` and `/api` require a valid `Authorization: Bearer <token>` header
-- XSUAA mode: OAuth proxy routes (`/authorize`, `/oauth/callback`, `/.well-known/*`) are mounted automatically
-- MCP clients with OAuth 2.1 support handle the authorization flow automatically
-
-### Environment variables
-
-| Variable | Mode | Description |
-| --- | --- | --- |
-| `OAUTH_ISSUER` | OIDC | Authorization Server issuer URL |
-| `OAUTH_AUDIENCE` | OIDC | Resource identifier for token validation |
-| `API_KEYS` | Any | API keys in `key:profile` format (comma-separated) |
-| `DCR_SIGNING_SECRET` | XSUAA | Stable secret for OAuth DCR + state codec |
-| `OAUTH_DCR_TTL_SECONDS` | XSUAA | DCR client lifetime (0 = never expire) |
-| `CORS_ALLOWED_ORIGINS` | Any | Comma-separated allowed origins |
-| `MCP_RATE_LIMIT` | Any | `/mcp` requests per minute (default: 600) |
-| `API_RATE_LIMIT` | Any | `/api` requests per minute (default: 600) |
+For LLM-skill usage, see [`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md)
+— the full API reference formatted for LLM consumption.
 
 ## Features
 
-- **Search SAP objects** — classes, CDS views, tables, data elements, BDEFs, etc.
-- **Filter by Clean Core Level** (A / B / C / D) — the new model replacing the 3-tier system since August 2025
-- **Find successors** for deprecated or non-released objects
-- **Clean Core compliance check** for a list of objects (with compliance rate)
-- **Statistics** — counts by level, type, and application component
-- **Smart search** — multi-token scoring with relevance ranking (e.g. `"purchase order"` finds `I_PURCHASEORDER`)
-- **Multi-system support** — S/4HANA Cloud Public, BTP ABAP Environment, Private Cloud, On-Premise
-- **Dynamic versioning** — PCE versions discovered automatically from the SAP repository
+- **Search SAP objects** — classes, CDS views, tables, data elements, BDEFs…
+- **Filter by Clean Core Level** (A / B / C / D) — the model replacing the 3-tier
+  system since August 2025.
+- **Find successors** for deprecated or non-released objects.
+- **Clean Core compliance check** for a list of objects (with compliance rate).
+- **Statistics** — counts by level, type, and application component.
+- **Smart search** — multi-token scoring (`"purchase order"` → `I_PURCHASEORDER`).
+- **Multi-system** — S/4HANA Cloud Public, BTP ABAP Environment, Private Cloud,
+  On-Premise; PCE versions discovered dynamically.
 
-## How It Works
+Data is fetched from SAP's public GitHub repository at runtime and cached in
+memory for 24h — no SAP system connection required.
 
-The server fetches JSON files from the official [SAP Cloudification Repository](https://github.com/SAP/abap-atc-cr-cv-s4hc) at runtime and caches them **in memory for 24 hours**. No SAP system connection is required — all data comes from SAP's public GitHub repository.
+### Clean Core Level Concept
 
-## Clean Core Level Concept
-
-Since August 2025, SAP replaced the 3-tier model with the **Clean Core Level Concept**:
-
-| Level | Description | Data Source | Upgrade Safety |
-| --- | --- | --- | --- |
-| **A** | Released APIs (ABAP Cloud) | `objectReleaseInfoLatest.json` (S/4HANA Cloud Public), `objectReleaseInfo_BTPLatest.json` (BTP), `objectReleaseInfo_PCE*.json` (PCE) | ✅ Upgrade-safe |
-| **B** | Classic APIs | `objectClassifications_SAP.json` | ⚠️ Upgrade-stable |
-| **C** | Internal / unclassified objects | Uncatalogued objects | 🟡 Manageable risk |
-| **D** | noAPI (not recommended) | Objects marked `noAPI` | 🔴 High risk |
-
-## MCP Tools
-
-The following tools are exposed via the MCP protocol on `POST /mcp`:
-
-### `sap_search_objects`
-
-Search for objects with advanced filters. Supports both exact SAP object names (`MARA`, `I_PURCHASEORDER`) and natural language queries (`purchase order`, `warehouse task`, `send email`). Results are ranked by relevance using a multi-token scoring algorithm.
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `query` | string | *(required)* | Search term — exact name or natural language (e.g. `I_PRODUCT`, `purchase order`) |
-| `system_type` | enum | `public_cloud` | `public_cloud`, `btp`, `private_cloud`, `on_premise` |
-| `clean_core_level` | enum | `A` | Maximum cumulative level: `A`, `B`, `C`, or `D` |
-| `version` | string | `latest` | PCE version (e.g. `2025`, `2023_3`). Ignored for `public_cloud` and `btp` |
-| `object_type` | string | *(all)* | TADIR filter (e.g. `CLAS`, `DDLS`, `TABL`) |
-| `app_component` | string | *(all)* | Application component (e.g. `MM-PUR`, `FI-GL`) |
-| `state` | enum | *(all)* | Filter by specific state |
-| `limit` | number | `25` | Results per page (1–100) |
-| `offset` | number | `0` | Pagination offset |
-
-### `sap_get_object_details`
-
-Get full details of a specific object including its Clean Core assessment, release state, and successor information.
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `object_type` | string | *(required)* | TADIR type (e.g. `TABL`, `CLAS`, `DDLS`) |
-| `object_name` | string | *(required)* | Object name (e.g. `MARA`, `CL_GUI_ALV_GRID`) |
-| `system_type` | enum | `public_cloud` | `public_cloud`, `btp`, `private_cloud`, `on_premise` |
-
-### `sap_find_successor`
-
-Find the successor(s) of a deprecated or non-released object. Essential for ABAP Cloud migration.
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `object_type` | string | *(required)* | TADIR type of the deprecated object |
-| `object_name` | string | *(required)* | Name of the deprecated object |
-| `system_type` | enum | `public_cloud` | Target system type |
-
-### `sap_check_clean_core_compliance`
-
-Check Clean Core compliance for a list of objects. Returns individual assessments and an overall compliance rate.
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `object_names` | string | *(required)* | Comma-separated list of object names |
-| `system_type` | enum | `public_cloud` | Target system type |
-| `target_level` | enum | `A` | Target Clean Core level |
-
-### `sap_list_versions`
-
-List all available S/4HANA PCE versions for Private Cloud and On-Premise systems. Versions are discovered dynamically from the SAP repository. No required parameters.
-
-### `sap_list_object_types`
-
-List all available TADIR object types with counts per Clean Core level. No required parameters.
-
-### `sap_get_statistics`
-
-Statistical overview of the repository — total counts, breakdown by level, by object type, and by application component. No required parameters.
-
-## REST API
-
-The same capabilities are available as simple `GET` endpoints under `/api`. All endpoints return JSON and support CORS.
-
-**Base URL:** `https://sap-released-objects-server-production.up.railway.app`
-
-| Endpoint | MCP Equivalent | Required Parameters |
+| Level | Meaning | Upgrade safety |
 | --- | --- | --- |
-| `GET /api` | — | Auto-documentation: lists all endpoints |
-| `GET /api/search` | `sap_search_objects` | `query` |
-| `GET /api/object` | `sap_get_object_details` | `object_type`, `object_name` |
-| `GET /api/successor` | `sap_find_successor` | `object_name` |
-| `GET /api/compliance` | `sap_check_clean_core_compliance` | `object_names` |
-| `GET /api/types` | `sap_list_object_types` | — |
-| `GET /api/statistics` | `sap_get_statistics` | — |
-| `GET /api/versions` | `sap_list_versions` | — |
-| `GET /health` | — | Health check |
+| **A** | Released APIs (ABAP Cloud) | ✅ Upgrade-safe |
+| **B** | Classic APIs | ⚠️ Upgrade-stable |
+| **C** | Internal / unclassified | 🟡 Manageable risk |
+| **D** | noAPI (not recommended) | 🔴 High risk |
 
-All endpoints accept optional `system_type`, `clean_core_level`, and `version` query parameters (same defaults as MCP tools).
+## MCP tools & REST endpoints
 
-For the **full REST API reference** (parameters, response formats, examples, LLM instructions), see [`SKILL.md`](./SKILL.md).
+Each MCP tool on `POST /mcp` has an identical REST counterpart under `/api`:
 
-## System Types
+| MCP tool | REST endpoint | Purpose |
+| --- | --- | --- |
+| `sap_search_objects` | `GET /api/search` | Search objects, ranked by relevance, with filters |
+| `sap_get_object_details` | `GET /api/object` | Full details + Clean Core assessment for one object |
+| `sap_find_successor` | `GET /api/successor` | Successor(s) of a deprecated / non-released object |
+| `sap_check_clean_core_compliance` | `GET /api/compliance` | Compliance rate for a list of objects |
+| `sap_list_versions` | `GET /api/versions` | Available S/4HANA PCE versions |
+| `sap_list_object_types` | `GET /api/types` | TADIR object types with per-level counts |
+| `sap_get_statistics` | `GET /api/statistics` | Repository statistics |
 
-| System Type | Description | Data Source | Levels | Versioned |
-| --- | --- | --- | --- | --- |
-| `public_cloud` | S/4HANA Cloud Public Edition | `objectReleaseInfoLatest.json` | A only | No |
-| `btp` | BTP ABAP Environment / Steampunk | `objectReleaseInfo_BTPLatest.json` | A only | No |
-| `private_cloud` | S/4HANA Cloud Private Edition | `objectReleaseInfo_PCE*.json` | A–D | Yes |
-| `on_premise` | S/4HANA On-Premise | `objectReleaseInfo_PCE*.json` | A–D | Yes |
+Parameters and response shapes are documented in
+[`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md).
 
-> **Note:** `public_cloud` and `btp` use different datasets — BTP ABAP Environment has a smaller, separate catalogue of released APIs. Use `btp` when developing for SAP BTP ABAP Environment (Steampunk).
+## Server modes & authentication
 
-## Usage Examples
+ROSA runs over **stdio** (default; local MCP clients) or **HTTP** (`--http` /
+`TRANSPORT=http`; remote/self-hosted). On HTTP it auto-detects four
+authentication modes from the environment — **public**, **OIDC / OAuth 2.1**,
+**XSUAA** (SAP BTP), and **API keys** — with no rebuild:
+
+| Mode | Trigger |
+| --- | --- |
+| Public | no auth env vars |
+| OIDC / OAuth 2.1 | `OAUTH_ISSUER` + `OAUTH_AUDIENCE` |
+| XSUAA | `VCAP_SERVICES` xsuaa binding (SAP BTP) |
+| API keys | `API_KEYS` (alongside any mode) |
+
+How transports, auth auto-detection, the auth × deployment matrix, and the
+system diagram work: **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**.
+
+## Usage examples
 
 ```
-You:    "Is table MARA available in ABAP Cloud?"
-Agent:  → calls sap_get_object_details(TABL, MARA, public_cloud)
-        → "MARA is deprecated. Successor: I_PRODUCT (CDS view)"
+You:   "Is table MARA available in ABAP Cloud?"
+Agent: → sap_get_object_details(TABL, MARA) → "deprecated; successor I_PRODUCT"
 
-You:    "Find released objects related to purchase orders"
-Agent:  → calls sap_search_objects(query="purchase order")
-        → Returns I_PURCHASEORDER, I_PURCHASEORDERITEM, etc. ranked by relevance
+You:   "My code uses BSEG, MARA, CL_GUI_ALV_GRID. Is it Clean Core?"
+Agent: → sap_check_clean_core_compliance(...) → "Compliance rate: 0%"
 
-You:    "Find all released CDS views for the MM-PUR module"
-Agent:  → calls sap_search_objects(query="I_", object_type="DDLS", app_component="MM-PUR")
-        → Returns list of Level A CDS views
-
-You:    "My code uses BSEG, MARA, CL_GUI_ALV_GRID. Is it Clean Core?"
-Agent:  → calls sap_check_clean_core_compliance(object_names="BSEG,MARA,CL_GUI_ALV_GRID")
-        → "Compliance rate: 0% — none of these objects are Level A"
-
-You:    "What's available for sending emails on BTP?"
-Agent:  → calls sap_search_objects(query="send email", system_type="btp")
-        → Returns relevant BTP ABAP Environment APIs
+You:   "What's available for sending emails on BTP?"
+Agent: → sap_search_objects(query="send email", system_type="btp")
 ```
 
-## Building Standalone Executables
+## Documentation
 
-<details>
-<summary>Build details (esbuild + pkg pipeline)</summary>
+| Doc | For |
+| --- | --- |
+| [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | Transports, auth modes, system diagram, MCP tools |
+| [DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Every deployment option + config reference + troubleshooting |
+| [cloud-foundry-classic.md](./docs/cloud-foundry-classic.md) | Classic (non-BTP) Cloud Foundry |
+| [RELEASE.md](./docs/RELEASE.md) | Release train & pipeline (maintainers) |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Dev setup, tests, commit convention |
+| [CHANGELOG.md](./CHANGELOG.md) | Notable changes |
 
-The project uses `esbuild` for bundling and `@yao-pkg/pkg` for packaging into native executables.
+## Contributing & releases
 
-**Pipeline:** `TypeScript → tsc → ESM JS → esbuild → single CJS bundle → pkg → native executable`
+PRs welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). This repo uses
+[Conventional Commits](https://www.conventionalcommits.org/); releases are cut by
+an automated [release train](./docs/RELEASE.md) that publishes the npm package,
+the multi-arch Docker image, and native executables from a single tag.
 
-```bash
-# Bundle first (required before pkg)
-npm run bundle
+## License
 
-# Build for a specific platform
-npm run pkg:win      # → bin/sap-released-objects-win.exe
-npm run pkg:linux    # → bin/sap-released-objects-linux
-npm run pkg:macos    # → bin/sap-released-objects-macos
-
-# Or all 3 at once
-npm run pkg:all
-```
-
-The resulting executable requires **no Node.js** on the target machine.
-
-</details>
-
-## Publishing a New Release
-
-Executables are automatically built by GitHub Actions when a version tag is pushed:
-
-```bash
-npm version patch   # or minor / major
-git push origin main --tags
-```
-
-GitHub Actions will then build on 3 runners (Ubuntu, Windows, macOS)
-
-## Deploying To SAP BTP Cloud Foundry
-
-See [Option 8 — SAP BTP Cloud Foundry](#option-8--sap-btp-cloud-foundry) in Quick Start for deployment instructions.
-
-The project uses an MTA descriptor (`mta.yaml`) that:
-- Creates and binds an XSUAA service instance from `xs-security.json`
-- Configures HTTP health check on `/health`
-- Sets `TRANSPORT=http` and `NODE_ENV=production`
-- Allocates 256 MB memory / 512 MB disk
-- Uses the Node.js buildpack with npm build
-
-Authentication is auto-detected from the XSUAA service binding in `VCAP_SERVICES`. A `manifest.yml` is also provided for simple `cf push` deployments without XSUAA.
+[MIT](./LICENSE)

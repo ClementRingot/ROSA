@@ -1,5 +1,5 @@
 ---
-name: SAP Released Objects API
+name: ROSA — Released Objects Search Assistant
 description: This API queries the SAP Cloudification Repository — the official source of truth for which SAP objects are released, deprecated, or forbidden in ABAP Cloud / Clean Core. It answers questions regarding object status, successors (e.g., MARA → I_PRODUCT), and Clean Core compliance.
 ---
 
@@ -304,7 +304,7 @@ GET /api/versions
 
 Health check.
 
-**Response:** `{ "status": "ok", "server": "sap-released-objects-server" }`
+**Response:** `{ "status": "ok", "server": "rosa" }`
 
 ## Typical Use Cases
 
