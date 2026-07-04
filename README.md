@@ -157,7 +157,7 @@ cf login -a https://api.cf.<region>.hana.ondemand.com
 
 ```bash
 mbt build
-cf deploy mta_archives/sap-released-objects-server_1.12.5.mtar
+cf deploy mta_archives/sap-released-objects-server_1.12.6.mtar
 ```
 
 For per-landscape overrides (custom host, DCR secret, etc.), copy `mta-overrides.mtaext.example`:
