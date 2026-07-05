@@ -94,7 +94,7 @@ curl "https://<your-instance>/api/compliance?object_names=MARA,BSEG,I_PRODUCT"
 For LLM-skill usage, two ready-made skills expose the full API reference:
 
 - [`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md) — points at the hosted public instance; use as-is.
-- [`skills/rosa-global/SKILL.md`](./skills/rosa-global/SKILL.md) — a template to adapt to your own public instance (set `ROSA_BASE_URL`).
+- [`skills/rosa-global/SKILL.md`](./skills/rosa-global/SKILL.md) — for your **own self-hosted** deployment: copy it and replace the `{{ROSA_BASE_URL}}` placeholder with your instance URL (public instances only; use MCP for secured ones).
 
 ## Features
 

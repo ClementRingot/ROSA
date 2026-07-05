@@ -11,6 +11,8 @@ description: This API queries the SAP Cloudification Repository — the official
 {{ROSA_BASE_URL}}
 ```
 
+Public instances only — for a secured instance, use the MCP server instead.
+
 All endpoints return JSON. All parameters are passed as query string. All endpoints support CORS.
 
 ## Common Parameters
