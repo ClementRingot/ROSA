@@ -7,40 +7,31 @@ description: This API queries the SAP Cloudification Repository — the official
 
 ## Base URL
 
-Use the base URL of your ROSA instance. If `ROSA_BASE_URL` is provided, use it;
-otherwise default to the hosted instance below. The REST API is identical on
-every deployment, so only this base URL changes.
+Use the base URL of your **public** ROSA instance. If `ROSA_BASE_URL` is
+provided, use it; otherwise default to the hosted instance below. The REST API
+is identical on every public deployment, so only this base URL changes.
 
 ```
 {{ROSA_BASE_URL | default: https://sap-released-objects-server-production.up.railway.app}}
 ```
 
-Self-hosted examples:
+Public instance examples:
 
 | Deployment | Base URL |
 |---|---|
 | Hosted (default) | `https://sap-released-objects-server-production.up.railway.app` |
-| Docker / Node host | `https://<your-host>` |
-| SAP BTP Cloud Foundry | `https://rosa.cfapps.<region>.hana.ondemand.com` |
+| Self-hosted (Docker / Node host) | `https://<your-host>` |
 | Local (HTTP mode) | `http://localhost:3001` |
 
 All endpoints return JSON. All parameters are passed as query string. All endpoints support CORS.
 
-## Authentication
+## Scope: public instances only
 
-Most public instances (including the hosted default) need **no** auth header —
-call the endpoints directly.
-
-If the instance is deployed with authentication (OIDC, XSUAA on SAP BTP, or API
-keys), send a bearer token on every `/api/*` request (`/health` is always public):
-
-```
-Authorization: Bearer <API_KEY>
-```
-
-An **API key** (configured server-side via `API_KEYS`) works on every auth mode,
-including XSUAA on BTP, and is the simplest option for non-interactive REST
-calls. If you receive `401 Unauthorized`, the instance requires this header.
+This skill targets **public** ROSA instances and sends **no** authentication
+header. If an instance is private (OIDC, XSUAA on SAP BTP, or API keys), do
+**not** use this REST skill — use the **MCP server** instead, which runs the
+OAuth 2.1 authorization flow. A `401 Unauthorized` means the instance is
+private: switch to MCP rather than trying to authenticate here.
 
 ## Common Parameters
 
@@ -409,7 +400,7 @@ Use `/api/types` to get the full list of available object types with counts.
 ### Error handling
 
 - HTTP 400: Missing required parameter. The `message` field explains what's needed.
-- HTTP 401: The instance requires authentication. Add `Authorization: Bearer <API_KEY>` (see Authentication above).
+- HTTP 401: The instance is private (auth required). This REST skill is for public instances only — use the MCP server instead.
 - HTTP 404: Object or type not found. Suggest alternatives.
 - HTTP 500: Server error. Retry once, then inform the user.
 - `"error": "no_results"`: The query matched nothing. Suggest broadening the search.
