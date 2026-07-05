@@ -22,6 +22,9 @@ From the next release onward, entries are maintained automatically by
 - **Release train** via release-please, with version sync for `mta.yaml`.
 - **npm-based Cloud Foundry / BTP deployment** wrapper (`deploy/btp-npm/`).
 - **`scripts/sync-version.js`** wired to the npm `version` hook.
+- **Self-hosted REST skill template** (`skills/rosa-global/`) with a
+  configurable `ROSA_BASE_URL`, alongside the turnkey public skill
+  (`skills/sap-released-objects/`) that targets the hosted instance.
 - **Documentation overhaul**: rewritten README with badges and a
   "Choose your deployment" table; new `docs/ARCHITECTURE.md`,
   `docs/DEPLOYMENT.md`, `docs/RELEASE.md`, and `docs/cloud-foundry-classic.md`;
