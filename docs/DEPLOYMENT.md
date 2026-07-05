@@ -291,6 +291,49 @@ MCP client config (the client runs the XSUAA OAuth flow automatically):
 }
 ```
 
+### Calling the REST API on BTP (machine-to-machine)
+
+With XSUAA, **`/api` is protected exactly like `/mcp`** — a plain `curl` without
+credentials returns `401`. The interactive OAuth 2.1 flow (Protected Resource
+Metadata → DCR → `/authorize` → `/oauth/callback`) is meant for **MCP clients**,
+which run it automatically. A **script or CI job** calling the REST API directly
+can't do that flow, so use one of these non-interactive options instead
+(`/health` stays public in all cases).
+
+**Option 1 — API key (simplest).** API keys work alongside XSUAA:
+
+```bash
+cf set-env rosa API_KEYS "ci-key:viewer,admin-key:admin"
+cf restage rosa
+
+curl -H "Authorization: Bearer ci-key" \
+  https://rosa.cfapps.<region>.hana.ondemand.com/api/search?query=mara
+```
+
+**Option 2 — XSUAA client-credentials token (technical user).** Mint a token from
+the bound XSUAA instance and send it as a bearer token:
+
+```bash
+# 1. Get the technical credentials of the bound XSUAA instance
+cf create-service-key rosa-xsuaa rosa-key
+cf service-key rosa-xsuaa rosa-key      # → clientid, clientsecret, url
+
+# 2. Exchange them for an access token (client-credentials grant)
+TOKEN=$(curl -s -X POST "$XSUAA_URL/oauth/token" \
+  -u "$CLIENTID:$CLIENTSECRET" \
+  -d grant_type=client_credentials | jq -r .access_token)
+
+# 3. Call the API
+curl -H "Authorization: Bearer $TOKEN" \
+  https://rosa.cfapps.<region>.hana.ondemand.com/api/search?query=mara
+```
+
+ROSA's `xs-security.json` declares **no scopes or role-templates** (it is
+authentication-only), so a client-credentials token from the **bound** XSUAA
+instance validates directly — no role collection to assign. The token must be
+issued by *that* instance; a token from a different XSUAA instance will fail the
+audience check.
+
 ---
 
 ## Node.js PaaS hosts

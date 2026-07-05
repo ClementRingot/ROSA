@@ -89,6 +89,10 @@ Cursor, VS Code).
 > classic (non-BTP) Cloud Foundry foundation — see
 > [cloud-foundry-classic.md](./cloud-foundry-classic.md).
 
+To call the REST API non-interactively on BTP (script / CI), use an API key or an
+XSUAA client-credentials token — see
+[DEPLOYMENT.md → Calling the REST API on BTP](./DEPLOYMENT.md#calling-the-rest-api-on-btp-machine-to-machine).
+
 ### API keys
 
 Layer on top of any mode for non-interactive callers:
