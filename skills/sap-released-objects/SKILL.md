@@ -33,6 +33,12 @@ header. If an instance is private (OIDC, XSUAA on SAP BTP, or API keys), do
 OAuth 2.1 authorization flow. A `401 Unauthorized` means the instance is
 private: switch to MCP rather than trying to authenticate here.
 
+**Exception — SAP BTP Destination.** A secured BTP instance is acceptable *only*
+when reached through an SAP BTP Destination: the Destination service supplies the
+credentials (e.g. `OAuth2ClientCredentials`), so the skill itself performs no
+authentication — it just calls the destination-resolved URL. For any other
+private instance, use the MCP server.
+
 ## Common Parameters
 
 These parameters appear on most endpoints:

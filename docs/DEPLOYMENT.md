@@ -334,6 +334,11 @@ instance validates directly — no role collection to assign. The token must be
 issued by *that* instance; a token from a different XSUAA instance will fail the
 audience check.
 
+> **From another BTP app?** Front ROSA with an SAP BTP **Destination**
+> (`OAuth2ClientCredentials`): the Destination service injects the token, so the
+> consuming app — or an LLM skill running on BTP — calls the destination-resolved
+> URL and performs no authentication itself.
+
 ---
 
 ## Node.js PaaS hosts
