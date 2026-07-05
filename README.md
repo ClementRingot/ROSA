@@ -1,13 +1,12 @@
 # ROSA — Released Objects Search Assistant
 
-[![npm version](https://img.shields.io/npm/v/@clementringot/rosa?logo=npm)](https://www.npmjs.com/package/@clementringot/rosa)
-[![npm downloads](https://img.shields.io/npm/dm/@clementringot/rosa)](https://www.npmjs.com/package/@clementringot/rosa)
-[![GitHub release](https://img.shields.io/github/v/release/ClementRingot/ROSA)](https://github.com/ClementRingot/ROSA/releases/latest)
-[![Release workflow](https://img.shields.io/github/actions/workflow/status/ClementRingot/ROSA/release.yml?label=release)](https://github.com/ClementRingot/ROSA/actions/workflows/release.yml)
-[![GHCR image](https://img.shields.io/badge/ghcr.io-rosa-blue?logo=docker&logoColor=white)](https://github.com/ClementRingot/ROSA/pkgs/container/rosa)
-[![Node](https://img.shields.io/node/v/@clementringot/rosa)](https://www.npmjs.com/package/@clementringot/rosa)
-[![License: MIT](https://img.shields.io/github/license/ClementRingot/ROSA)](./LICENSE)
-[![MCP Server](https://img.shields.io/badge/MCP-server-blue)](https://modelcontextprotocol.io/)
+[![@clementringot/rosa](https://img.shields.io/npm/v/@clementringot/rosa?logo=npm&label=%40clementringot%2Frosa&color=orange)](https://www.npmjs.com/package/@clementringot/rosa)
+[![ghcr.io rosa](https://img.shields.io/badge/ghcr.io-rosa-blue?logo=docker&logoColor=white)](https://github.com/ClementRingot/ROSA/pkgs/container/rosa)
+[![CI](https://img.shields.io/github/actions/workflow/status/ClementRingot/ROSA/ci.yml?label=CI)](https://github.com/ClementRingot/ROSA/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/ClementRingot/ROSA/release.yml?label=release)](https://github.com/ClementRingot/ROSA/actions/workflows/release.yml)
+[![node](https://img.shields.io/node/v/@clementringot/rosa?logo=node.js&logoColor=white)](https://www.npmjs.com/package/@clementringot/rosa)
+[![license MIT](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![MCP server](https://img.shields.io/badge/MCP-server-8A2BE2)](https://modelcontextprotocol.io/)
 
 **ROSA gives AI agents real-time knowledge of which SAP objects are released for
 ABAP Cloud / Clean Core — and what to use instead when they're not.**
