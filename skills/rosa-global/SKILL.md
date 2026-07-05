@@ -1,43 +1,17 @@
 ---
-name: ROSA — Released Objects Search Assistant (self-hosted)
-description: Generic, adaptable version of the ROSA REST skill — set ROSA_BASE_URL to your own public instance. Queries the SAP Cloudification Repository (the official source of truth for which SAP objects are released, deprecated, or forbidden in ABAP Cloud / Clean Core) for object status, successors (e.g., MARA → I_PRODUCT), and Clean Core compliance.
+name: ROSA — Released Objects Search Assistant
+description: This API queries the SAP Cloudification Repository — the official source of truth for which SAP objects are released, deprecated, or forbidden in ABAP Cloud / Clean Core. It answers questions regarding object status, successors (e.g., MARA → I_PRODUCT), and Clean Core compliance.
 ---
 
 # Skill Instructions
 
 ## Base URL
 
-Use the base URL of your **public** ROSA instance. If `ROSA_BASE_URL` is
-provided, use it; otherwise default to the hosted instance below. The REST API
-is identical on every public deployment, so only this base URL changes.
-
 ```
-{{ROSA_BASE_URL | default: https://sap-released-objects-server-production.up.railway.app}}
+{{ROSA_BASE_URL}}
 ```
-
-Public instance examples:
-
-| Deployment | Base URL |
-|---|---|
-| Hosted (default) | `https://sap-released-objects-server-production.up.railway.app` |
-| Self-hosted (Docker / Node host) | `https://<your-host>` |
-| Local (HTTP mode) | `http://localhost:3001` |
 
 All endpoints return JSON. All parameters are passed as query string. All endpoints support CORS.
-
-## Scope: public instances only
-
-This skill targets **public** ROSA instances and sends **no** authentication
-header. If an instance is private (OIDC, XSUAA on SAP BTP, or API keys), do
-**not** use this REST skill — use the **MCP server** instead, which runs the
-OAuth 2.1 authorization flow. A `401 Unauthorized` means the instance is
-private: switch to MCP rather than trying to authenticate here.
-
-**Exception — SAP BTP Destination.** A secured BTP instance is acceptable *only*
-when reached through an SAP BTP Destination: the Destination service supplies the
-credentials (e.g. `OAuth2ClientCredentials`), so the skill itself performs no
-authentication — it just calls the destination-resolved URL. For any other
-private instance, use the MCP server.
 
 ## Common Parameters
 
@@ -406,7 +380,6 @@ Use `/api/types` to get the full list of available object types with counts.
 ### Error handling
 
 - HTTP 400: Missing required parameter. The `message` field explains what's needed.
-- HTTP 401: The instance is private (auth required). This REST skill is for public instances only — use the MCP server instead.
 - HTTP 404: Object or type not found. Suggest alternatives.
 - HTTP 500: Server error. Retry once, then inform the user.
 - `"error": "no_results"`: The query matched nothing. Suggest broadening the search.
