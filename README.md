@@ -88,6 +88,9 @@ curl "https://<your-instance>/api/object?object_type=TABL&object_name=MARA"
 curl "https://<your-instance>/api/compliance?object_names=MARA,BSEG,I_PRODUCT"
 ```
 
+> On a secured instance (OIDC / XSUAA / API keys) add `Authorization: Bearer <token>`
+> — see [Calling the REST API on BTP](./docs/DEPLOYMENT.md#calling-the-rest-api-on-btp-machine-to-machine).
+
 For LLM-skill usage, see [`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md)
 — the full API reference formatted for LLM consumption.
 
