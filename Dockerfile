@@ -6,7 +6,7 @@
 # Docker = server usage, so the container runs the HTTP transport.
 # ============================================================================
 
-FROM node:22 AS build
+FROM node:26 AS build
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ COPY sap_abbreviation_dictionary.json ./
 
 RUN npm run build && npm prune --omit=dev
 
-FROM node:22-slim AS runtime
+FROM node:26-slim AS runtime
 
 WORKDIR /app
 
