@@ -1,5 +1,5 @@
 {
-  "name": "@clementringot/rosa",
+  "name": "@rosa-mcp/server",
   "version": "1.12.6",
   "description": "ROSA — Released Objects Search Assistant. MCP server and REST API for the SAP Cloudification Repository: search released objects, classic APIs, and successors with Clean Core Level filtering (A/B/C/D).",
   "type": "module",

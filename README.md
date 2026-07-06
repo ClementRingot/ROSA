@@ -1,10 +1,10 @@
 # ROSA — Released Objects Search Assistant
 
-[![@clementringot/rosa](https://img.shields.io/npm/v/@clementringot/rosa?logo=npm&label=%40clementringot%2Frosa&color=orange)](https://www.npmjs.com/package/@clementringot/rosa)
+[![@rosa-mcp/server](https://img.shields.io/npm/v/@rosa-mcp/server?logo=npm&label=%40rosa-mcp%2Fserver&color=orange)](https://www.npmjs.com/package/@rosa-mcp/server)
 [![ghcr.io rosa](https://img.shields.io/badge/ghcr.io-rosa-blue?logo=docker&logoColor=white)](https://github.com/ClementRingot/ROSA/pkgs/container/rosa)
 [![CI](https://img.shields.io/github/actions/workflow/status/ClementRingot/ROSA/ci.yml?label=CI)](https://github.com/ClementRingot/ROSA/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/actions/workflow/status/ClementRingot/ROSA/release.yml?label=release)](https://github.com/ClementRingot/ROSA/actions/workflows/release.yml)
-[![node](https://img.shields.io/node/v/@clementringot/rosa?logo=node.js&logoColor=white)](https://www.npmjs.com/package/@clementringot/rosa)
+[![node](https://img.shields.io/node/v/@rosa-mcp/server?logo=node.js&logoColor=white)](https://www.npmjs.com/package/@rosa-mcp/server)
 [![license MIT](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 [![MCP server](https://img.shields.io/badge/MCP-server-8A2BE2)](https://modelcontextprotocol.io/)
 
@@ -23,32 +23,21 @@ business logic — no feature gap between them:
 > Ask *"Is table MARA available in ABAP Cloud?"* and the agent instantly knows:
 > **no — use `I_PRODUCT` instead.**
 
-## Choose your deployment
+## Quick start — Hosted instance (recommended)
 
-| I want to… | Use | One-liner |
-| --- | --- | --- |
-| Plug into Claude Desktop / Code / Cursor | **npm** | `npx -y @clementringot/rosa` |
-| Run without Node.js installed | **Native executable** | download from [Releases](https://github.com/ClementRingot/ROSA/releases/latest) |
-| Run as a server / self-host | **Docker** | `docker run -p 3001:3001 ghcr.io/clementringot/rosa` |
-| Deploy on a generic Node host | **Node PaaS** | Railway / Render / Fly.io — set `TRANSPORT=http` |
-| Deploy on SAP BTP Cloud Foundry | **MTA** or **npm wrapper** | see [DEPLOYMENT](./docs/DEPLOYMENT.md#sap-btp-cloud-foundry-two-paths) |
-| Deploy on classic Cloud Foundry | **`cf push`** | see [cloud-foundry-classic](./docs/cloud-foundry-classic.md) |
+ROSA is publicly hosted — no install, no server to run. Connect your AI agent
+directly:
 
-Full details for every option: **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)**.
+### MCP (Claude Desktop, Claude Code, Cursor, Cline…)
 
-## Quick start (MCP client)
-
-No install needed — `npx` runs the server in stdio mode, which is what MCP
-clients expect. Add one of these to your client config:
-
-**Claude Desktop** (`claude_desktop_config.json`) / **Claude Code** (`.mcp.json`):
+**Claude Code** (`.mcp.json`) / **Claude Desktop** (`claude_desktop_config.json`):
 
 ```json
 {
   "mcpServers": {
     "rosa": {
-      "command": "npx",
-      "args": ["-y", "@clementringot/rosa"]
+      "type": "url",
+      "url": "https://sap-released-objects-server-production.up.railway.app/mcp"
     }
   }
 }
@@ -60,41 +49,55 @@ clients expect. Add one of these to your client config:
 {
   "mcpServers": {
     "rosa": {
-      "command": "npx",
-      "args": ["-y", "@clementringot/rosa"]
+      "type": "url",
+      "url": "https://sap-released-objects-server-production.up.railway.app/mcp"
     }
   }
 }
 ```
 
-Prefer a hosted, zero-install setup? Point your client at a running instance's
-`/mcp` URL instead:
-
-```json
-{
-  "mcpServers": {
-    "rosa": { "type": "url", "url": "https://<your-instance>/mcp" }
-  }
-}
-```
-
-### REST API (skills, scripts, CI)
+### REST API
 
 All endpoints are `GET`, return JSON, and support CORS:
 
 ```bash
-curl "https://<your-instance>/api/search?query=purchase+order"
-curl "https://<your-instance>/api/object?object_type=TABL&object_name=MARA"
-curl "https://<your-instance>/api/compliance?object_names=MARA,BSEG,I_PRODUCT"
+curl "https://sap-released-objects-server-production.up.railway.app/api/search?query=purchase+order"
+curl "https://sap-released-objects-server-production.up.railway.app/api/object?object_type=TABL&object_name=MARA"
+curl "https://sap-released-objects-server-production.up.railway.app/api/compliance?object_names=MARA,BSEG,I_PRODUCT"
 ```
-
-> On a secured instance (OIDC / XSUAA / API keys) add `Authorization: Bearer <token>`
-> — see [Calling the REST API on BTP](./docs/DEPLOYMENT.md#calling-the-rest-api-on-btp-machine-to-machine).
 
 For LLM-skill usage, two ready-made skills expose the full API reference:
 
 - [`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md) — points at the hosted public instance; use as-is.
-- [`skills/rosa-global/SKILL.md`](./skills/rosa-global/SKILL.md) — for your **own self-hosted** deployment: copy it and replace the `{{ROSA_BASE_URL}}` placeholder with your instance URL (public instances only; use MCP for secured ones).
+- [`skills/rosa-global/SKILL.md`](./skills/rosa-global/SKILL.md) — for your **own self-hosted** deployment: copy it and replace the `{{ROSA_BASE_URL}}` placeholder with your instance URL.
+
+---
+
+## Self-hosted / alternative deployments
+
+| I want to… | Use | One-liner |
+| --- | --- | --- |
+| Run locally via npx (stdio) | **npm** | `npx -y @rosa-mcp/server` |
+| Run without Node.js installed | **Native executable** | download from [Releases](https://github.com/ClementRingot/ROSA/releases/latest) |
+| Run as a server / self-host | **Docker** | `docker run -p 3001:3001 ghcr.io/clementringot/rosa` |
+| Deploy on a generic Node host | **Node PaaS** | Railway / Render / Fly.io — set `TRANSPORT=http` |
+| Deploy on SAP BTP Cloud Foundry | **MTA** or **npm wrapper** | see [DEPLOYMENT](./docs/DEPLOYMENT.md#sap-btp-cloud-foundry-two-paths) |
+| Deploy on classic Cloud Foundry | **`cf push`** | see [cloud-foundry-classic](./docs/cloud-foundry-classic.md) |
+
+Full details for every option: **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)**.
+
+### Local MCP (stdio mode)
+
+```json
+{
+  "mcpServers": {
+    "rosa": {
+      "command": "npx",
+      "args": ["-y", "@rosa-mcp/server"]
+    }
+  }
+}
+```
 
 ## Features
 
