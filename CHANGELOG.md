@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 From the next release onward, entries are maintained automatically by
 [release-please](./docs/RELEASE.md).
 
+## [1.13.1](https://github.com/ClementRingot/ROSA/compare/v1.13.0...v1.13.1) (2026-07-06)
+
+
+### Bug Fixes
+
+* rename npm package to @rosa-mcp/server ([54a2bb5](https://github.com/ClementRingot/ROSA/commit/54a2bb576535c3ab9a1a2b49cefd71f958a4507d))
+* rename npm package to @rosa-mcp/server ([a85fd26](https://github.com/ClementRingot/ROSA/commit/a85fd26eb711d0d65082d1b97f793774083b1f04))
+* resolve merge conflict - keep @rosa-mcp/server name with v1.13.0 ([0d91c7f](https://github.com/ClementRingot/ROSA/commit/0d91c7ff672869bf1a26f427d4edb8d359793835))
+
 ## [1.13.0](https://github.com/ClementRingot/ROSA/compare/v1.12.6...v1.13.0) (2026-07-06)
 
 
