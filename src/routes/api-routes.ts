@@ -153,7 +153,7 @@ export function createApiRouter(): Router {
   // =========================================================================
   router.get("/", (_req: Request, res: Response) => {
     res.json({
-      name: "SAP Released Objects API",
+      name: "ROSA REST API",
       description: "REST API for the SAP Cloudification Repository — search released objects, find successors, check Clean Core compliance.",
       endpoints: ENDPOINTS,
     });

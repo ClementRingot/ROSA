@@ -1,15 +1,23 @@
 #!/usr/bin/env node
 
 // ============================================================================
-// SAP Released Objects Server
+// ROSA — Released Objects Search Assistant
 // Main entry point — supports both stdio and HTTP transports
 // Exposes MCP protocol on /mcp and REST API on /api
 //
-// Authentication modes (config-driven):
+// Transport selection (stdio is the default, expected by MCP clients):
+//   - stdio  — default; used by Claude Desktop, Claude Code, Cursor...
+//   - http   — enabled by `--http` flag or TRANSPORT=http env var
+//              port from `--port <n>` flag or PORT env var (default 3001)
+//
+// Authentication modes (config-driven, HTTP transport only):
 //   - XSUAA (BTP Cloud Foundry) — auto-detected from VCAP_SERVICES
-//   - OIDC (Docker private)     — activated by OAUTH_ISSUER env var
-//   - Public (no auth)          — when neither is configured
+//   - OIDC (self-hosted private) — activated by OAUTH_ISSUER env var
+//   - API keys                   — activated by API_KEYS (alongside any mode)
+//   - Public (no auth)           — when none of the above is configured
 // ============================================================================
+
+import { createRequire } from "node:module";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -23,12 +31,42 @@ import { createApiRouter } from "./routes/api-routes.js";
 import { configureAuth } from "./middleware/oauth.js";
 
 // ---------------------------------------------------------------------------
+// Resolve the package version (single source of truth = package.json).
+// Falls back to a compiled-in default in bundled / pkg contexts where the
+// package.json may not be resolvable from the module location.
+// ---------------------------------------------------------------------------
+
+let version = "1.12.6";
+try {
+  const require = createRequire(import.meta.url);
+  version = (require("../package.json") as { version: string }).version;
+} catch {
+  // Keep the fallback version.
+}
+
+// ---------------------------------------------------------------------------
+// CLI flags — `--http`, `--port <n>` (env vars TRANSPORT / PORT still work)
+// ---------------------------------------------------------------------------
+
+const argv = process.argv.slice(2);
+
+function flagValue(name: string): string | undefined {
+  const idx = argv.indexOf(name);
+  if (idx !== -1 && idx + 1 < argv.length) return argv[idx + 1];
+  const inline = argv.find((a) => a.startsWith(`${name}=`));
+  return inline ? inline.slice(name.length + 1) : undefined;
+}
+
+const useHttp = argv.includes("--http") || process.env.TRANSPORT === "http";
+const port = parseInt(flagValue("--port") || process.env.PORT || "3001", 10);
+
+// ---------------------------------------------------------------------------
 // Create and configure the MCP server
 // ---------------------------------------------------------------------------
 
 const server = new McpServer({
-  name: "sap-released-objects-server",
-  version: "1.0.0",
+  name: "rosa",
+  version,
 });
 
 // Register all tools
@@ -39,17 +77,17 @@ registerTools(server);
 // ---------------------------------------------------------------------------
 
 async function runStdio(): Promise<void> {
-  console.error("[SAP Released Objects MCP] Starting in stdio mode...");
+  console.error("[ROSA] Starting in stdio mode...");
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("[SAP Released Objects MCP] Server connected via stdio");
+  console.error("[ROSA] Server connected via stdio");
 }
 
 // ---------------------------------------------------------------------------
 // Transport: Streamable HTTP
 // ---------------------------------------------------------------------------
 
-async function runHTTP(): Promise<void> {
+async function runHTTP(httpPort: number): Promise<void> {
   const app = express();
 
   // Security headers (no restrictive COOP — popup OAuth requires it unset)
@@ -66,7 +104,7 @@ async function runHTTP(): Promise<void> {
 
   // Health check endpoint (always public, before auth)
   app.get("/health", (_req, res) => {
-    res.json({ status: "ok", server: "sap-released-objects-server" });
+    res.json({ status: "ok", server: "rosa" });
   });
 
   // Rate limiters
@@ -85,10 +123,9 @@ async function runHTTP(): Promise<void> {
   });
 
   // Authentication (auto-detects XSUAA / OIDC / public)
-  const port = parseInt(process.env.PORT || "3001");
   const { middleware: authMiddleware, mode: authMode } = configureAuth(
     app,
-    port
+    httpPort
   );
 
   // Apply auth middleware to protected routes (when auth is configured)
@@ -111,25 +148,21 @@ async function runHTTP(): Promise<void> {
     await transport.handleRequest(req, res, req.body);
   });
 
-  app.listen(port, () => {
-    console.error(
-      `[SAP Released Objects MCP] HTTP server running on http://localhost:${port}`
-    );
-    console.error(`  MCP endpoint: http://localhost:${port}/mcp`);
-    console.error(`  REST API:     http://localhost:${port}/api`);
-    console.error(`  Health:       http://localhost:${port}/health`);
+  app.listen(httpPort, () => {
+    console.error(`[ROSA] HTTP server running on http://localhost:${httpPort}`);
+    console.error(`  MCP endpoint: http://localhost:${httpPort}/mcp`);
+    console.error(`  REST API:     http://localhost:${httpPort}/api`);
+    console.error(`  Health:       http://localhost:${httpPort}/health`);
     console.error(`  Auth mode:    ${authMode}`);
   });
 }
 
 // ---------------------------------------------------------------------------
-// Choose transport based on environment
+// Choose transport
 // ---------------------------------------------------------------------------
 
-const transport = process.env.TRANSPORT || "stdio";
-
-if (transport === "http") {
-  runHTTP().catch((error) => {
+if (useHttp) {
+  runHTTP(port).catch((error) => {
     console.error("Server error:", error);
     process.exit(1);
   });

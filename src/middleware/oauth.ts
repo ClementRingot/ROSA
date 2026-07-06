@@ -86,7 +86,7 @@ export function configureAuth(
 
   if (authMode.kind === "none") {
     console.error(
-      "[SAP Released Objects MCP] No auth configured — public access"
+      "[ROSA] No auth configured — public access"
     );
     return { middleware: undefined, mode: "public" };
   }
@@ -100,8 +100,8 @@ export function configureAuth(
     options.xsuaa = {
       credentials,
       appUrl,
-      clientIdPrefix: "sap-released-objects-",
-      resourceName: "SAP Released Objects MCP",
+      clientIdPrefix: "rosa-",
+      resourceName: "ROSA — Released Objects Search Assistant",
       scopesSupported: [],
       dcrSigningSecret: process.env.DCR_SIGNING_SECRET,
       dcrTtlSeconds: process.env.OAUTH_DCR_TTL_SECONDS
@@ -109,7 +109,7 @@ export function configureAuth(
         : undefined,
     };
 
-    console.error("[SAP Released Objects MCP] XSUAA auth enabled");
+    console.error("[ROSA] XSUAA auth enabled");
     console.error(`  App URL:   ${appUrl}`);
     console.error(`  XSUAA:     ${credentials.url}`);
     console.error(`  xsappname: ${credentials.xsappname}`);
@@ -121,7 +121,7 @@ export function configureAuth(
       audience: authMode.audience,
     };
 
-    console.error("[SAP Released Objects MCP] OIDC auth enabled");
+    console.error("[ROSA] OIDC auth enabled");
     console.error(`  Issuer:   ${authMode.issuer}`);
     console.error(`  Audience: ${authMode.audience}`);
   }
@@ -130,7 +130,7 @@ export function configureAuth(
   const apiKeys = process.env.API_KEYS;
   if (apiKeys) {
     options.apiKeys = apiKeys;
-    console.error("[SAP Released Objects MCP] API key auth enabled");
+    console.error("[ROSA] API key auth enabled");
   }
 
   // CORS origins (for browser-based MCP clients)

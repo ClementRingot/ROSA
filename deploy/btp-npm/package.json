@@ -1,0 +1,15 @@
+{
+  "name": "rosa-btp-deploy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Thin Cloud Foundry / SAP BTP wrapper that runs @clementringot/rosa straight from npm — no repo source or mbt build required.",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@clementringot/rosa": "1.12.6"
+  },
+  "scripts": {
+    "start": "rosa --http"
+  }
+}

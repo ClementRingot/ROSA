@@ -8,8 +8,10 @@ description: This API queries the SAP Cloudification Repository — the official
 ## Base URL
 
 ```
-https://sap-released-objects-server-production.up.railway.app
+{{ROSA_BASE_URL}}
 ```
+
+Public instances only — for a secured instance, use the MCP server instead.
 
 All endpoints return JSON. All parameters are passed as query string. All endpoints support CORS.
 

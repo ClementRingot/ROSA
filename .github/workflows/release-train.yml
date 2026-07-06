@@ -1,0 +1,29 @@
+name: Release Train
+
+# Release-please maintains a rolling "chore(release): X.Y.Z" PR from the
+# conventional commits merged into main. Merging that PR bumps package.json,
+# updates CHANGELOG.md and the version in mta.yaml, and creates the vX.Y.Z tag.
+#
+# NOTE: tags created with the default GITHUB_TOKEN do NOT trigger other
+# workflows. To make the tag fire release.yml automatically, provide a
+# fine-grained PAT as the RELEASE_PLEASE_TOKEN secret (contents: write,
+# pull-requests: write). Without it, the release still tags but release.yml
+# must be started manually (see docs/RELEASE.md).
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

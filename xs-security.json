@@ -1,5 +1,5 @@
 {
-  "xsappname": "sap-released-objects",
+  "xsappname": "rosa",
   "tenant-mode": "dedicated",
   "description": "Authentication only — no scopes or role-templates. XSUAA proves identity; the server serves public read-only data and does not require authorization gating.",
   "oauth2-configuration": {

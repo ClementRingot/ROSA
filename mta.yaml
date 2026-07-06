@@ -1,9 +1,9 @@
 _schema-version: "3.1"
-ID: sap-released-objects-server
-version: 1.12.5
+ID: rosa
+version: 1.12.6 # x-release-please-version
 
 modules:
-  - name: sap-released-objects-mcp
+  - name: rosa
     type: nodejs
     path: .
     parameters:
@@ -18,10 +18,10 @@ modules:
       builder: npm
       build-result: dist
     requires:
-      - name: sap-released-objects-xsuaa
+      - name: rosa-xsuaa
 
 resources:
-  - name: sap-released-objects-xsuaa
+  - name: rosa-xsuaa
     type: org.cloudfoundry.managed-service
     parameters:
       service: xsuaa
