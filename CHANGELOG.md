@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 From the next release onward, entries are maintained automatically by
 [release-please](./docs/RELEASE.md).
 
+## [1.13.2](https://github.com/ClementRingot/ROSA/compare/v1.13.1...v1.13.2) (2026-07-06)
+
+
+### Bug Fixes
+
+* **ci:** use explicit --output in pkg:all to produce rosa-* filenames ([45f9261](https://github.com/ClementRingot/ROSA/commit/45f92617c6deb8563ededf8d0ae8bfa4d436a9b2))
+
 ## [1.13.1](https://github.com/ClementRingot/ROSA/compare/v1.13.0...v1.13.1) (2026-07-06)
 
 
