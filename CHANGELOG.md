@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 From the next release onward, entries are maintained automatically by
 [release-please](./docs/RELEASE.md).
 
+## [1.13.0](https://github.com/ClementRingot/ROSA/compare/v1.12.6...v1.13.0) (2026-07-06)
+
+
+### Features
+
+* add Docker, BTP/MTA deployment, OAuth 2.1 auth, and documentation ([#4](https://github.com/ClementRingot/ROSA/issues/4)) ([da9a577](https://github.com/ClementRingot/ROSA/commit/da9a5778707369bc46d50c9e815e566c93a48fdc))
+* add npm-based Cloud Foundry / BTP deployment wrapper ([b5fae0d](https://github.com/ClementRingot/ROSA/commit/b5fae0d21d92346e4d77a65f7497a72d348cf98f))
+* rebrand to ROSA and ship as scoped npm package @clementringot/rosa ([51d4beb](https://github.com/ClementRingot/ROSA/commit/51d4bebb60000ab462bf1ce9eb37a61a33747d5e))
+* ROSA rebrand, npm package, unified release pipeline & docs overhaul ([2ff6ca4](https://github.com/ClementRingot/ROSA/commit/2ff6ca49a838e06bb47af9b6f8c3855684e0a8b8))
+
 ## [Unreleased]
 
 ### Added

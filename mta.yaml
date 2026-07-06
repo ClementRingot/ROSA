@@ -1,6 +1,6 @@
 _schema-version: "3.1"
 ID: rosa
-version: 1.12.6 # x-release-please-version
+version: 1.13.0 # x-release-please-version
 
 modules:
   - name: rosa
