@@ -63,7 +63,6 @@ jobs:
     permissions:
       contents: read
       id-token: write # Trusted Publishing + provenance on npmjs
-      packages: write # GitHub Packages mirror
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,16 +84,6 @@ jobs:
       - name: Publish to npmjs (Trusted Publishing, provenance auto-attached)
         run: npm publish --access public
 
-      - name: Setup Node.js (GitHub Packages registry)
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          registry-url: "https://npm.pkg.github.com"
-
-      - name: Publish to GitHub Packages (mirror)
-        run: npm publish --access public --registry https://npm.pkg.github.com
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------------------------
   # Multi-arch Docker image -> GHCR.
