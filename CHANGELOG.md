@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 From the next release onward, entries are maintained automatically by
 [release-please](./docs/RELEASE.md).
 
+## [1.14.0](https://github.com/ClementRingot/ROSA/compare/v1.13.2...v1.14.0) (2026-07-06)
+
+
+### Features
+
+* publish as @rosa-mcp/server on npmjs ([b8c5bf4](https://github.com/ClementRingot/ROSA/commit/b8c5bf4cdadebbf40d93efdd21ed6c97459c39e6))
+
 ## [1.13.2](https://github.com/ClementRingot/ROSA/compare/v1.13.1...v1.13.2) (2026-07-06)
 
 
