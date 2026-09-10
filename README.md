@@ -23,34 +23,37 @@ business logic — no feature gap between them:
 > Ask *"Is table MARA available in ABAP Cloud?"* and the agent instantly knows:
 > **no — use `I_PRODUCT` instead.**
 
-## Quick start — Hosted instance (recommended)
+## Quick start
 
-ROSA is publicly hosted — no install, no server to run. Connect your AI agent
-directly:
+> **The previously hosted public instance (on Railway) has been retired** — it
+> was too costly to keep running. There is **no default public URL** anymore.
+> Everything else still works: run ROSA via `npx`, a native executable, Docker,
+> any Node host, or SAP BTP — see the deployment options below.
 
-### MCP (Claude Desktop, Claude Code, Cursor, Cline…)
-
-**Claude Code** (`.mcp.json`) / **Claude Desktop** (`claude_desktop_config.json`):
+The quickest path is **npx** — no install, runs in stdio mode (what MCP clients
+expect). Add this to your client config (Claude Code `.mcp.json`, Claude Desktop
+`claude_desktop_config.json`, or Cursor `~/.cursor/mcp.json`):
 
 ```json
 {
   "mcpServers": {
     "rosa": {
-      "type": "url",
-      "url": "https://sap-released-objects-server-production.up.railway.app/mcp"
+      "command": "npx",
+      "args": ["-y", "@rosa-mcp/server"]
     }
   }
 }
 ```
 
-**Cursor** (`~/.cursor/mcp.json` or `.cursor/mcp.json`):
+Already running ROSA somewhere (self-hosted / your own server)? Point your client
+at its URL instead:
 
 ```json
 {
   "mcpServers": {
     "rosa": {
       "type": "url",
-      "url": "https://sap-released-objects-server-production.up.railway.app/mcp"
+      "url": "https://<your-instance>/mcp"
     }
   }
 }
@@ -58,18 +61,20 @@ directly:
 
 ### REST API
 
-All endpoints are `GET`, return JSON, and support CORS:
+All endpoints are `GET`, return JSON, and support CORS (replace `<your-instance>`
+with your own host):
 
 ```bash
-curl "https://sap-released-objects-server-production.up.railway.app/api/search?query=purchase+order"
-curl "https://sap-released-objects-server-production.up.railway.app/api/object?object_type=TABL&object_name=MARA"
-curl "https://sap-released-objects-server-production.up.railway.app/api/compliance?object_names=MARA,BSEG,I_PRODUCT"
+curl "https://<your-instance>/api/search?query=purchase+order"
+curl "https://<your-instance>/api/object?object_type=TABL&object_name=MARA"
+curl "https://<your-instance>/api/compliance?object_names=MARA,BSEG,I_PRODUCT"
 ```
 
-For LLM-skill usage, two ready-made skills expose the full API reference:
+For LLM-skill usage, the full API reference is available as a skill you point at
+your instance:
 
-- [`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md) — points at the hosted public instance; use as-is.
-- [`skills/rosa-global/SKILL.md`](./skills/rosa-global/SKILL.md) — for your **own self-hosted** deployment: copy it and replace the `{{ROSA_BASE_URL}}` placeholder with your instance URL.
+- [`skills/rosa-global/SKILL.md`](./skills/rosa-global/SKILL.md) — copy it and replace the `{{ROSA_BASE_URL}}` placeholder with your instance URL.
+- [`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md) — **obsolete** (was wired to the retired hosted instance); kept for reference only.
 
 ---
 

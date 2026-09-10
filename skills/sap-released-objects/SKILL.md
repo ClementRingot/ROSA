@@ -1,15 +1,22 @@
 ---
-name: ROSA — Released Objects Search Assistant
-description: This API queries the SAP Cloudification Repository — the official source of truth for which SAP objects are released, deprecated, or forbidden in ABAP Cloud / Clean Core. It answers questions regarding object status, successors (e.g., MARA → I_PRODUCT), and Clean Core compliance.
+name: ROSA — Released Objects Search Assistant (OBSOLETE)
+description: "[OBSOLETE — the hosted instance this skill targeted has been retired; use skills/rosa-global instead.] This API queries the SAP Cloudification Repository — the official source of truth for which SAP objects are released, deprecated, or forbidden in ABAP Cloud / Clean Core. It answers questions regarding object status, successors (e.g., MARA → I_PRODUCT), and Clean Core compliance."
 ---
 
 # Skill Instructions
+
+> ⚠️ **OBSOLETE — do not use as-is.** The hosted instance this skill targeted (on
+> Railway) has been retired, so the base URL below no longer responds. Kept for
+> reference only. Use [`../rosa-global/SKILL.md`](../rosa-global/SKILL.md)
+> instead and set your own `{{ROSA_BASE_URL}}`.
 
 ## Base URL
 
 ```
 https://sap-released-objects-server-production.up.railway.app
 ```
+
+> This endpoint is no longer available (see the obsolete notice above).
 
 All endpoints return JSON. All parameters are passed as query string. All endpoints support CORS.
 
