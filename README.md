@@ -74,7 +74,7 @@ For LLM-skill usage, the full API reference is available as a skill you point at
 your instance:
 
 - [`skills/rosa-global/SKILL.md`](./skills/rosa-global/SKILL.md) — copy it and replace the `{{ROSA_BASE_URL}}` placeholder with your instance URL.
-- [`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md) — the same reference; note it was wired to the now-retired hosted URL, so set the base URL before use.
+- [`skills/sap-released-objects/SKILL.md`](./skills/sap-released-objects/SKILL.md) — **obsolete** (was wired to the retired hosted instance); kept for reference only.
 
 ---
 
