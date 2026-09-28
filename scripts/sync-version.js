@@ -8,7 +8,9 @@
 // Sources of drift kept in sync:
 //   - mta.yaml            : `version:` descriptor field
 //   - README.md           : `..._X.Y.Z.mtar` archive references
-//   - src/index.ts        : the compiled-in fallback version literal
+//
+// (src/index.ts no longer hard-codes the version: the bundle gets it from
+// esbuild `define` and dist/ reads package.json — see src/index.ts.)
 //
 // Wired to the npm `version` lifecycle hook in package.json so bumps stay
 // automatic; also runnable on demand via `npm run sync-version`.
@@ -57,12 +59,5 @@ patch("mta.yaml", /^(version:\s*)\d+\.\d+\.\d+/m, `$1${version}`);
 
 // README.md — every `_X.Y.Z.mtar` reference (e.g. mta_archives/rosa_1.2.3.mtar)
 patch("README.md", /_\d+\.\d+\.\d+\.mtar/g, `_${version}.mtar`);
-
-// src/index.ts — the compiled-in fallback version literal
-patch(
-  "src/index.ts",
-  /(let version = ")\d+\.\d+\.\d+(";)/,
-  `$1${version}$2`
-);
 
 console.log(`[sync-version] done (version ${version})`);

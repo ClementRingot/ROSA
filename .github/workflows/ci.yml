@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
@@ -32,5 +32,44 @@ jobs:
       - name: Bundle with esbuild
         run: npm run bundle
 
-      - name: Verify bundle starts
-        run: timeout 3 node bundle/index.cjs 2>&1 || true
+      # Real check (replaces the old `node bundle/index.cjs || true` that could
+      # never fail): the bundle must report the package.json version over MCP.
+      - name: Verify the bundle reports the real version
+        run: node scripts/check-bundle-version.mjs
+
+      # Negative control: a bundle built WITHOUT the esbuild version define must
+      # make the check fail — otherwise the check above proves nothing.
+      - name: Negative control (bundle without the version define must fail)
+        run: |
+          npx esbuild dist/index.js --bundle --platform=node --target=node20 \
+            --format=cjs --outfile=bundle/nodefine.cjs
+          cp sap_abbreviation_dictionary.json bundle/sap_abbreviation_dictionary.json
+          if node scripts/check-bundle-version.mjs bundle/nodefine.cjs; then
+            echo "::error::negative control passed unexpectedly — the version check does not actually detect a missing define"
+            exit 1
+          fi
+          echo "negative control OK — check correctly failed on the un-defined bundle"
+
+  # Changeset guard: a PR that changes what ROSA ships must carry a changeset
+  # (or an empty one to merge without releasing).
+  guard:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # need base + head history for the diff
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Require a changeset for shipped changes
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/require-changeset.mjs
+        # require-changeset.mjs uses only Node builtins, so this job needs no
+        # `npm ci`. The shipped-deps unit tests run in the `build` job's `npm test`.
