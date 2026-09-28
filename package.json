@@ -67,7 +67,7 @@
     "url": "https://github.com/ClementRingot/ROSA/issues"
   },
   "dependencies": {
-    "@arc-mcp/xsuaa-auth": "^0.1.4",
+    "@arc-mcp/xsuaa-auth": "^1.1.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
