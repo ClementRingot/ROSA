@@ -16,6 +16,13 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # zod 4 is a breaking major (schema + error-handling API changes) and zod
+      # underpins every MCP tool / REST schema — upgrade it deliberately with a
+      # migration and a test pass, not via an automatic Dependabot bump. Minor
+      # and patch updates of zod still come through.
+      - dependency-name: "zod"
+        update-types: ["version-update:semver-major"]
 
   # --- Docker ---
   - package-ecosystem: docker
