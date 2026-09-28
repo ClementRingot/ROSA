@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.14.2
+
+### Patch Changes
+
+- 9f2558e: Update runtime dependencies (production closure): `@modelcontextprotocol/sdk`,
+  `express-rate-limit`, `helmet`, and `jose` (minor/patch bumps).
+
 ## 1.14.1
 
 ### Patch Changes
