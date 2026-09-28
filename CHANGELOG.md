@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.14.1
+
+### Patch Changes
+
+- e08fa24: Report the real version from the native executables and the esbuild bundle. The
+  version is now injected at build time (esbuild `define`) instead of falling back
+  to a stale hard-coded literal, so `node bundle/index.cjs` and the published
+  binaries no longer report an outdated version.
+
 All notable changes to this project are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
