@@ -27,6 +27,9 @@
     "test:watch": "vitest",
     "dev": "tsc --watch",
     "sync-version": "node scripts/sync-version.js",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && node scripts/sync-version.js && npm install --package-lock-only",
+    "changeset:check": "node scripts/require-changeset.mjs",
     "prepack": "npm run build",
     "bundle": "npm run build && node esbuild.config.mjs",
     "pkg:win": "npm run bundle && pkg bundle/index.cjs --targets node20-win-x64 --output bin/rosa-win.exe",
@@ -74,6 +77,7 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.0.0",

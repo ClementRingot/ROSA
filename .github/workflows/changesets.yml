@@ -1,0 +1,72 @@
+name: Changesets
+
+# Fully automated release train (changesets/action), on every push to main:
+#
+#   - Pending changesets?  → opens/updates the "chore(release): version packages"
+#     PR, which runs `npm run changeset:version` (bumps package.json + CHANGELOG,
+#     mirrors mta.yaml + the README, refreshes the lockfile).
+#   - No pending changesets? → runs scripts/tag-missing-releases.mjs, which pushes
+#     the canonical vX.Y.Z tag for the committed version if it is not already
+#     tagged. The pushed tag then triggers release.yml (npm + GHCR + binaries).
+#
+# The only human step is MERGING the version PR.
+#
+# ── Auth: GitHub App (not a PAT) ─────────────────────────────────────────────
+# Events created with the default GITHUB_TOKEN don't trigger other workflows
+# (GitHub anti-recursion), so the tag this pushes wouldn't fire release.yml. A
+# GitHub App token does — and, unlike a PAT, never expires:
+#   1. Create/reuse an App (Contents: RW, Pull requests: RW), no webhook.
+#   2. Install it on this repository.
+#   3. Set repo VARIABLE  RELEASE_APP_ID  and SECRET  RELEASE_APP_PRIVATE_KEY.
+# While RELEASE_APP_ID is unset it falls back to github.token: the version PR
+# still works, but a tag it pushes won't trigger release.yml — start release.yml
+# manually then (see docs/RELEASE.md).
+
+on:
+  push:
+    branches: [main]
+
+concurrency: changesets-main
+
+permissions:
+  contents: write # push the version branch + tags (github.token fallback)
+  pull-requests: write # open the version PR (github.token fallback)
+
+jobs:
+  changesets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint a GitHub App token
+        id: app-token
+        if: vars.RELEASE_APP_ID != ''
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          # App token → default token; only the App token makes the pushed tag
+          # trigger release.yml.
+          token: ${{ steps.app-token.outputs.token || github.token }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - run: npm ci
+
+      - uses: changesets/action@v2
+        with:
+          github-token: ${{ steps.app-token.outputs.token || github.token }}
+          version-script: npm run changeset:version
+          publish-script: node scripts/tag-missing-releases.mjs
+          commit-message: "chore(release): version packages"
+          pr-title: "chore(release): version packages"
+          # Tags + GitHub releases are ours: tag-missing-releases.mjs pushes the
+          # canonical vX.Y.Z tag and release.yml cuts the release. Keep the action
+          # from creating its own @rosa-mcp/server@X.Y.Z-style tags/releases.
+          create-github-releases: false
+          push-git-tags: false
