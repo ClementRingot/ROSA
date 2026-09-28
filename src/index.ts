@@ -32,17 +32,30 @@ import { configureAuth } from "./middleware/oauth.js";
 
 // ---------------------------------------------------------------------------
 // Resolve the package version (single source of truth = package.json).
-// Falls back to a compiled-in default in bundled / pkg contexts where the
-// package.json may not be resolvable from the module location.
+//
+//   - Bundled builds (esbuild → bundle/index.cjs → pkg binaries): the version
+//     is injected at build time via esbuild `define` as __ROSA_VERSION__
+//     (see esbuild.config.mjs), because require('../package.json') is not
+//     resolvable from inside a bundle.
+//   - Unbundled dist/index.js (npm, Docker): read the sibling package.json.
+//   - Dev/test, or a bundle built without the define: fall back to 0.0.0-dev.
 // ---------------------------------------------------------------------------
 
-let version = "1.12.6";
-try {
-  const require = createRequire(import.meta.url);
-  version = (require("../package.json") as { version: string }).version;
-} catch {
-  // Keep the fallback version.
+declare const __ROSA_VERSION__: string | undefined;
+
+function resolveVersion(): string {
+  // `typeof` on a possibly-undeclared identifier is the one read that never
+  // throws; it is a string only when esbuild injected it (bundled context).
+  if (typeof __ROSA_VERSION__ === "string") return __ROSA_VERSION__;
+  try {
+    const require = createRequire(import.meta.url);
+    return (require("../package.json") as { version: string }).version;
+  } catch {
+    return "0.0.0-dev";
+  }
 }
+
+const version = resolveVersion();
 
 // ---------------------------------------------------------------------------
 // CLI flags — `--http`, `--port <n>` (env vars TRANSPORT / PORT still work)
