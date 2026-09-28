@@ -27,8 +27,11 @@
     "test:watch": "vitest",
     "dev": "tsc --watch",
     "sync-version": "node scripts/sync-version.js",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && node scripts/sync-version.js && npm install --package-lock-only",
+    "changeset:check": "node scripts/require-changeset.mjs",
     "prepack": "npm run build",
-    "bundle": "npm run build && esbuild dist/index.js --bundle --platform=node --target=node20 --format=cjs --outfile=bundle/index.cjs && node -e \"require('fs').copyFileSync('sap_abbreviation_dictionary.json','bundle/sap_abbreviation_dictionary.json')\"",
+    "bundle": "npm run build && node esbuild.config.mjs",
     "pkg:win": "npm run bundle && pkg bundle/index.cjs --targets node20-win-x64 --output bin/rosa-win.exe",
     "pkg:linux": "npm run bundle && pkg bundle/index.cjs --targets node20-linux-x64 --output bin/rosa-linux",
     "pkg:macos": "npm run bundle && pkg bundle/index.cjs --targets node20-macos-x64 --output bin/rosa-macos",
@@ -74,6 +77,7 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.0.0",
