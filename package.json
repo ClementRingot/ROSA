@@ -84,7 +84,7 @@
     "@yao-pkg/pkg": "^6.14.1",
     "esbuild": "^0.28.2",
     "typescript": "^6.0.3",
-    "vitest": "^3.2.4"
+    "vitest": "^5.0.2"
   },
   "overrides": {
     "@yao-pkg/pkg": {
