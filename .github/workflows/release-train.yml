@@ -2,28 +2,48 @@ name: Release Train
 
 # Release-please maintains a rolling "chore(release): X.Y.Z" PR from the
 # conventional commits merged into main. Merging that PR bumps package.json,
-# updates CHANGELOG.md and the version in mta.yaml, and creates the vX.Y.Z tag.
+# updates CHANGELOG.md and the version in mta.yaml, and creates the vX.Y.Z tag,
+# which then triggers release.yml.
 #
-# NOTE: tags created with the default GITHUB_TOKEN do NOT trigger other
-# workflows. To make the tag fire release.yml automatically, provide a
-# fine-grained PAT as the RELEASE_PLEASE_TOKEN secret (contents: write,
-# pull-requests: write). Without it, the release still tags but release.yml
-# must be started manually (see docs/RELEASE.md).
+# ── Auth: GitHub App (not a PAT) ─────────────────────────────────────────────
+# Events created with the default GITHUB_TOKEN do NOT trigger other workflows
+# (GitHub anti-recursion), so the tag release-please pushes wouldn't fire
+# release.yml. A PAT works but expires. Instead this workflow authenticates as a
+# GitHub App (App tokens don't expire):
+#   1. Create/one App (Settings → Developer settings → GitHub Apps):
+#      permissions Contents: RW, Pull requests: RW, Issues: RW (labels), no webhook.
+#   2. Install it on this repository.
+#   3. Set repo VARIABLE  RELEASE_APP_ID          (the App's numeric ID)
+#      and repo SECRET     RELEASE_APP_PRIVATE_KEY (a generated .pem key).
+# While RELEASE_APP_ID is unset the workflow falls back to github.token, which
+# maintains the release PR but won't trigger release.yml on the tag — start
+# release.yml manually in that case (see docs/RELEASE.md).
 
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: write # push the release branch + tag (github.token fallback)
+  pull-requests: write # open/maintain the release PR (github.token fallback)
+  issues: write # release-please manages "autorelease:" labels
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - name: Mint a GitHub App token
+        id: app-token
+        if: vars.RELEASE_APP_ID != ''
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       - uses: googleapis/release-please-action@v5
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          # App token → default token; only the App token makes the pushed tag
+          # trigger release.yml.
+          token: ${{ steps.app-token.outputs.token || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json

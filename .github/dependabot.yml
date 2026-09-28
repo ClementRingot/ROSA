@@ -1,7 +1,18 @@
+# Dependabot — automated dependency-update PRs. CI runs on each (build, tests,
+# the bundle version check, and the ship-guard), so a bump that breaks anything
+# never merges.
+#
+# Release semantics (release-please): a bump that SHIPS must carry a releasable
+# commit type or the ship-guard blocks the PR (see scripts/require-release.mjs).
+# So production bumps are prefixed `fix(deps)` (a `fix` → patch release), and
+# groups are split by dependency-type so a grouped PR is purely production
+# (→ fix(deps)) or purely development (→ chore(dev-deps), never released) and the
+# prefix is unambiguous. Majors are excluded from the groups so they arrive as
+# individual PRs (they can break).
 version: 2
 
 updates:
-  # --- npm ---
+  # ── npm ──────────────────────────────────────────────────────────────────
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -9,15 +20,21 @@ updates:
       day: monday
     open-pull-requests-limit: 5
     commit-message:
-      prefix: "chore(deps)"
-      prefix-development: "chore(dev-deps)"
+      prefix: "fix(deps)" # production deps ship → must be releasable
+      prefix-development: "chore(dev-deps)" # dev deps never ship → not released
     groups:
-      minor-and-patch:
+      production-deps:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+      development-deps:
+        dependency-type: development
         update-types:
           - minor
           - patch
 
-  # --- Docker ---
+  # ── Docker ─────────────────────────────────────────────────────────────────
   - package-ecosystem: docker
     directory: /
     schedule:
@@ -26,8 +43,16 @@ updates:
     open-pull-requests-limit: 2
     commit-message:
       prefix: "chore(docker)"
+    # Node MAJOR upgrades are a deliberate migration, not a weekly bump: the
+    # image must stay on an LTS line aligned with `engines.node` and the SAP BTP
+    # Node.js buildpack, and Dependabot can't tell LTS (even) majors from
+    # short-lived Current (odd) ones — it proposed node 25, an already-EOL
+    # odd release. Patch/minor updates of the base image still come through.
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
 
-  # --- GitHub Actions ---
+  # ── GitHub Actions ───────────────────────────────────────────────────────
   - package-ecosystem: github-actions
     directory: /
     schedule:
