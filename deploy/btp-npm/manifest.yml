@@ -2,7 +2,7 @@
 # npm-based Cloud Foundry deployment.
 #
 # Push this folder (not the repo). The Node.js buildpack runs `npm install`
-# at staging, pulling @clementringot/rosa from npm, then starts it in HTTP
+# at staging, pulling @rosa-mcp/server from npm, then starts it in HTTP
 # mode. To ship a new version, bump the pinned dependency in package.json and
 # `cf push` again — no source checkout, no mbt build.
 applications:
@@ -21,8 +21,9 @@ applications:
       # OIDC auth (optional): point at the platform UAA or an external IdP.
       # OAUTH_ISSUER: https://login.company.com/oauth
       # OAUTH_AUDIENCE: https://rosa.internal.company.com
-    # XSUAA auth (SAP BTP): pre-create the service from the repo's
-    # xs-security.json, then uncomment the binding below:
+    # XSUAA auth (SAP BTP): first replace the localhost example in the repo's
+    # xs-security.json with this server's exact public /oauth/callback.
+    # Then create/update the service and uncomment the binding below:
     #   cf create-service xsuaa application rosa-xsuaa -c xs-security.json
     # services:
     #   - rosa-xsuaa
