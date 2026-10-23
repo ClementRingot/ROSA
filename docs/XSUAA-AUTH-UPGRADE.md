@@ -29,6 +29,11 @@ for a new instance). Preserve your existing scopes, role templates and `xsappnam
 the service update to finish before testing sign-in. The checked-in localhost URI is only
 a local-development example; change its port explicitly if needed.
 
+The npm wrapper now uses the current `@rosa-mcp/server` package name. The release
+version-sync script updates its exact pin when the release is versioned. Existing
+copied wrappers need that new package name and the published release containing this
+fix; pushing the old `@clementringot/rosa` pin does not deploy the change.
+
 Node 20 is no longer supported by this dependency. The engine declarations, esbuild target
 and native executable build targets now use Node 22. Rebuild binary distributions as part of
 the next release rather than distributing existing Node 20 bundles.

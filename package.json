@@ -1,7 +1,7 @@
 {
   "name": "@rosa-mcp/server",
   "version": "1.14.1",
-  "description": "ROSA — Released Objects Search Assistant. MCP server and REST API for the SAP Cloudification Repository: search released objects, classic APIs, and successors with Clean Core Level filtering (A/B/C/D).",
+  "description": "ROSA \u2014 Released Objects Search Assistant. MCP server and REST API for the SAP Cloudification Repository: search released objects, classic APIs, and successors with Clean Core Level filtering (A/B/C/D).",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -36,7 +36,7 @@
     "pkg:linux": "npm run bundle && pkg bundle/index.cjs --targets node22-linux-x64 --output bin/rosa-linux",
     "pkg:macos": "npm run bundle && pkg bundle/index.cjs --targets node22-macos-x64 --output bin/rosa-macos",
     "pkg:all": "npm run bundle && pkg bundle/index.cjs --targets node22-win-x64 --output bin/rosa-win.exe && pkg bundle/index.cjs --targets node22-linux-x64 --output bin/rosa-linux && pkg bundle/index.cjs --targets node22-macos-x64 --output bin/rosa-macos",
-    "version": "node scripts/sync-version.js && git add mta.yaml README.md"
+    "version": "node scripts/sync-version.js && git add mta.yaml README.md deploy/btp-npm/package.json"
   },
   "pkg": {
     "assets": [
@@ -56,7 +56,7 @@
     "rap",
     "rest-api"
   ],
-  "author": "Clément Ringot",
+  "author": "Cl\u00e9ment Ringot",
   "license": "MIT",
   "homepage": "https://github.com/ClementRingot/ROSA#readme",
   "repository": {

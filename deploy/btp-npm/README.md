@@ -2,17 +2,22 @@
 
 Deploy ROSA to Cloud Foundry **without cloning the repo or building anything
 locally**. This folder is a thin wrapper: it declares a pinned dependency on
-[`@clementringot/rosa`](https://www.npmjs.com/package/@clementringot/rosa) and
+[`@rosa-mcp/server`](https://www.npmjs.com/package/@rosa-mcp/server) and
 lets the Node.js buildpack install it at staging.
 
 ## Deploy
+
+Use Node.js 22 or later. For this security update, wait for the release containing
+`@arc-mcp/xsuaa-auth` 1.2.0, then pin that published ROSA version here. The release
+version-sync script updates this wrapper automatically; merging a source PR does
+not update an already staged app. See the [OAuth upgrade guide](../../docs/XSUAA-AUTH-UPGRADE.md).
 
 ```bash
 cd deploy/btp-npm
 cf push
 ```
 
-The buildpack runs `npm install` (pulling `@clementringot/rosa` from npm), then
+The buildpack runs `npm install` (pulling `@rosa-mcp/server` from npm), then
 `npm start`, which launches the server in HTTP mode on the port CF injects.
 Verify with `curl https://<app-route>/health` → `{"status":"ok","server":"rosa"}`.
 
@@ -21,7 +26,7 @@ Verify with `curl https://<app-route>/health` → `{"status":"ok","server":"rosa
 Edit the pinned version in [`package.json`](./package.json) and push again:
 
 ```json
-"@clementringot/rosa": "1.13.0"
+"@rosa-mcp/server": "<published-patched-version>"
 ```
 
 ```bash
@@ -32,7 +37,8 @@ cf push
 
 - **Public** (default): no auth env vars — fine for public, read-only data.
 - **OIDC**: set `OAUTH_ISSUER` + `OAUTH_AUDIENCE` (see `manifest.yml`).
-- **XSUAA** (SAP BTP): pre-create the service from the repo's `xs-security.json`
+- **XSUAA** (SAP BTP): replace the localhost example in `xs-security.json` with
+  the exact public `https://<app-route>/oauth/callback`, then create/update the service
   and bind it (see the commented `services:` block in `manifest.yml`).
 
 ## When to use this vs. the MTA / from-source path
