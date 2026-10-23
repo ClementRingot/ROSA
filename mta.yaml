@@ -15,15 +15,46 @@ modules:
       NODE_ENV: production
       TRANSPORT: http
     build-parameters:
-      builder: npm
-      build-result: dist
+      builder: custom
+      commands:
+        - npm ci
+        - npm run build
+      # Keep the runtime manifest/lock, compiled dist/ and dictionary together.
+      # Packaging only dist/ loses the start command and Node engine declaration.
+      build-result: .
+      ignore:
+        - node_modules/
+        - src/
+        - scripts/
+        - docs/
+        - deploy/
+        - bin/
+        - bundle/
+        - coverage/
+        - .git/
+        - .github/
+        - .claude/
+        - .changeset/
+        - .mta/
+        - mta_archives/
+        - .env
+    provides:
+      - name: oauth-api
+        properties:
+          url: ${default-url}
     requires:
       - name: rosa-xsuaa
 
 resources:
   - name: rosa-xsuaa
     type: org.cloudfoundry.managed-service
+    requires:
+      - name: oauth-api
     parameters:
       service: xsuaa
       service-plan: application
       path: ./xs-security.json
+      config:
+        oauth2-configuration:
+          redirect-uris:
+            - ~{oauth-api/url}/oauth/callback
