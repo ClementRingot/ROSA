@@ -37,7 +37,7 @@ then jump to the section.
 The package [`@clementringot/rosa`](https://www.npmjs.com/package/@clementringot/rosa)
 starts in **stdio** mode by default — exactly what MCP clients expect.
 
-**Prerequisites:** Node.js ≥ 20.
+**Prerequisites:** Node.js ≥ 22.
 
 ### npx (no install)
 
@@ -139,7 +139,7 @@ The image runs as the non-root `node` user and ships a `HEALTHCHECK`.
 ## Build from source
 
 For contributors and anyone who wants to modify the code. **Prerequisites:**
-Node.js ≥ 20, npm ≥ 10.
+Node.js ≥ 22, npm ≥ 10.
 
 ```bash
 git clone https://github.com/ClementRingot/ROSA.git
