@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@rosa-mcp/server": "1.14.1"
+    "@rosa-mcp/server": "1.14.2"
   },
   "scripts": {
     "start": "rosa --http"
