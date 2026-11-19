@@ -7,6 +7,7 @@
 //
 // Sources of drift kept in sync:
 //   - mta.yaml            : `version:` descriptor field
+//   - deploy/btp-npm/package.json : published package name and version
 //   - README.md           : `..._X.Y.Z.mtar` archive references
 //
 // (src/index.ts no longer hard-codes the version: the bundle gets it from
@@ -59,5 +60,13 @@ patch("mta.yaml", /^(version:\s*)\d+\.\d+\.\d+/m, `$1${version}`);
 
 // README.md — every `_X.Y.Z.mtar` reference (e.g. mta_archives/rosa_1.2.3.mtar)
 patch("README.md", /_\d+\.\d+\.\d+\.mtar/g, `_${version}.mtar`);
+
+// The npm deployment wrapper must receive the release that was just versioned,
+// not a stale pre-migration package that still bundles older authentication.
+const wrapperPath = join(root, "deploy/btp-npm/package.json");
+const wrapper = JSON.parse(readFileSync(wrapperPath, "utf-8"));
+delete wrapper.dependencies["@clementringot/rosa"];
+wrapper.dependencies[pkg.name] = version;
+writeFileSync(wrapperPath, JSON.stringify(wrapper, null, 2) + "\n");
 
 console.log(`[sync-version] done (version ${version})`);
