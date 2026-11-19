@@ -1,5 +1,7 @@
 # ROSA — Released Objects Search Assistant
 
+> Upgrading an XSUAA deployment? Read the [OAuth upgrade guide](docs/XSUAA-AUTH-UPGRADE.md) before redeploying.
+
 [![@rosa-mcp/server](https://img.shields.io/npm/v/@rosa-mcp/server?logo=npm&label=%40rosa-mcp%2Fserver&color=orange)](https://www.npmjs.com/package/@rosa-mcp/server)
 [![ghcr.io rosa](https://img.shields.io/badge/ghcr.io-rosa-blue?logo=docker&logoColor=white)](https://github.com/ClementRingot/ROSA/pkgs/container/rosa)
 [![CI](https://img.shields.io/github/actions/workflow/status/ClementRingot/ROSA/ci.yml?label=CI)](https://github.com/ClementRingot/ROSA/actions/workflows/ci.yml)

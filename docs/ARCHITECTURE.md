@@ -81,9 +81,11 @@ Auto-detected when the app runs on Cloud Foundry with an XSUAA service binding
 (`VCAP_SERVICES`). Backed by [`@arc-mcp/xsuaa-auth`](https://www.npmjs.com/package/@arc-mcp/xsuaa-auth),
 which implements the full MCP OAuth 2.1 proxy: Protected Resource Metadata,
 stateless Dynamic Client Registration (DCR), an OAuth callback proxy, and JWT
-verification against the XSUAA JWKS. The `xs-security.json` ships redirect-URI
-patterns for common MCP clients (localhost, `*.hana.ondemand.com`, Claude,
-Cursor, VS Code).
+verification against the XSUAA JWKS. Each new authorization requires browser
+approval before XSUAA sign-in; the callback checks the approval cookie. The
+XSUAA service allows the server's exact public `/oauth/callback`. Client return
+addresses are governed separately by the proxy's registration policy. See the
+[upgrade guide](XSUAA-AUTH-UPGRADE.md) for existing deployments.
 
 > XSUAA requires SAP BTP's managed `xsuaa` service. It is **not** available on a
 > classic (non-BTP) Cloud Foundry foundation — see
@@ -108,7 +110,7 @@ curl -H "Authorization: Bearer ci-key" http://localhost:3001/api/search?query=ma
 | --- | --- |
 | `GET /health` | Never (load balancers, orchestrators) |
 | `GET /.well-known/oauth-protected-resource` | Never — served only when auth is enabled |
-| `GET /authorize`, `GET /oauth/callback` | XSUAA proxy routes (only when XSUAA) |
+| `GET/POST /authorize`, `GET /oauth/callback` | XSUAA proxy routes (only when XSUAA) |
 | `POST /mcp`, `GET /api/*` | When auth is enabled |
 
 Rate limiting is always on regardless of auth mode: `/mcp` and `/api` default to

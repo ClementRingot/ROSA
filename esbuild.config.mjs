@@ -18,7 +18,7 @@ await build({
   outfile: "bundle/index.cjs",
   bundle: true,
   platform: "node",
-  target: "node20",
+  target: "node22",
   format: "cjs",
   define: { __ROSA_VERSION__: JSON.stringify(version) },
 });

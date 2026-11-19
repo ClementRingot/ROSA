@@ -5,7 +5,7 @@ TypeScript project — here's the short version.
 
 ## Development setup
 
-**Requirements:** Node.js ≥ 20, npm ≥ 10.
+**Requirements:** Node.js ≥ 22, npm ≥ 10.
 
 ```bash
 git clone https://github.com/ClementRingot/ROSA.git

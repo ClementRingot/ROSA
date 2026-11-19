@@ -34,15 +34,15 @@ then jump to the section.
 
 ## Build with npm
 
-The package [`@clementringot/rosa`](https://www.npmjs.com/package/@clementringot/rosa)
+The package [`@rosa-mcp/server`](https://www.npmjs.com/package/@rosa-mcp/server)
 starts in **stdio** mode by default — exactly what MCP clients expect.
 
-**Prerequisites:** Node.js ≥ 20.
+**Prerequisites:** Node.js ≥ 22.
 
 ### npx (no install)
 
 ```bash
-npx -y @clementringot/rosa
+npx -y @rosa-mcp/server
 ```
 
 MCP client config (Claude Desktop / Claude Code / Cursor):
@@ -52,7 +52,7 @@ MCP client config (Claude Desktop / Claude Code / Cursor):
   "mcpServers": {
     "rosa": {
       "command": "npx",
-      "args": ["-y", "@clementringot/rosa"]
+      "args": ["-y", "@rosa-mcp/server"]
     }
   }
 }
@@ -61,7 +61,7 @@ MCP client config (Claude Desktop / Claude Code / Cursor):
 ### Global install
 
 ```bash
-npm install -g @clementringot/rosa
+npm install -g @rosa-mcp/server
 rosa            # stdio
 rosa --http --port 3000   # HTTP server
 ```
@@ -69,7 +69,7 @@ rosa --http --port 3000   # HTTP server
 ### As a project dependency
 
 ```bash
-npm install @clementringot/rosa
+npm install @rosa-mcp/server
 ```
 
 ```jsonc
@@ -139,7 +139,7 @@ The image runs as the non-root `node` user and ships a `HEALTHCHECK`.
 ## Build from source
 
 For contributors and anyone who wants to modify the code. **Prerequisites:**
-Node.js ≥ 20, npm ≥ 10.
+Node.js ≥ 22, npm ≥ 10.
 
 ```bash
 git clone https://github.com/ClementRingot/ROSA.git
@@ -226,7 +226,7 @@ server with auto-detected XSUAA auth; they differ in what you push.
 | | **npm wrapper** ([`deploy/btp-npm/`](../deploy/btp-npm/)) | **MTA from source** |
 | --- | --- | --- |
 | What you push | manifest + tiny `package.json` | the full repo (or built MTA archive) |
-| Staging | buildpack runs `npm install @clementringot/rosa` | buildpack build + `mbt build` |
+| Staging | buildpack runs `npm install @rosa-mcp/server` | buildpack build + `mbt build` |
 | Push size / speed | tiny / fast | large / slower |
 | Patch the code | ✖ (consumes published npm) | ✅ |
 | Managed XSUAA service | manual `cf create-service` + bind | ✅ automatic (MTA resource) |
@@ -239,7 +239,7 @@ cd deploy/btp-npm
 cf push
 ```
 
-The Node.js buildpack installs `@clementringot/rosa` from npm and starts it in
+The Node.js buildpack installs `@rosa-mcp/server` from npm and starts it in
 HTTP mode. Bump the pinned version in `deploy/btp-npm/package.json` and
 `cf push` again to upgrade. For XSUAA, pre-create the service and bind it (see
 the commented block in `deploy/btp-npm/manifest.yml`). Full notes:
@@ -437,8 +437,9 @@ cf ssh rosa -c "curl -s http://localhost:8080/health"
   server can reach the JWKS endpoint (DNS/proxy/firewall).
 - **XSUAA "clients must re-register after restart"** — set a stable
   `DCR_SIGNING_SECRET` and `cf restage rosa`.
-- **XSUAA `redirect_uri` mismatch** — add the client's callback pattern to
-  `xs-security.json` and redeploy.
+- **XSUAA `redirect_uri` mismatch** — configure the server's exact public
+  `/oauth/callback` in the XSUAA service configuration. Client return addresses
+  belong to the proxy's registration policy; see [the upgrade guide](XSUAA-AUTH-UPGRADE.md).
 
 ### Cloud Foundry
 
