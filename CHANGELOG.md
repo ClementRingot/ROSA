@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.14.2
+
+### Patch Changes
+
+- 2e027ee: Update runtime dependencies (production closure): `@arc-mcp/xsuaa-auth` 1.2.1,
+  `@modelcontextprotocol/sdk` 1.32.2, `express` 5.3.0, `express-rate-limit`, `jose`,
+  and transitive SAP Cloud SDK / `@sap/xssec`, `axios`, `qs`, `node-forge`,
+  `follow-redirects` (minor/patch bumps).
+- 9f2558e: Update runtime dependencies (production closure): `@modelcontextprotocol/sdk`,
+  `express-rate-limit`, `helmet`, and `jose` (minor/patch bumps).
+- 842d68f: Upgrade @arc-mcp/xsuaa-auth to 1.2.0 for browser-bound OAuth client approval (GHSA-6935-r3wv-f646). Upgrade all instances together and restart in-flight sign-ins. Existing tokens are not revoked.
+  
+  Node.js 22 or newer is required, including deployment and standalone executable builds.
+
 ## 1.14.1
 
 ### Patch Changes
